@@ -23,6 +23,7 @@
   "dependencies": {
     "@aws-sdk/client-codepipeline": "^3.335.0",
     "@aws-sdk/client-dynamodb": "^3.337.0",
+    "@aws-sdk/client-s3": "^3.338.0",
     "@aws-sdk/lib-dynamodb": "^3.337.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
