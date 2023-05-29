@@ -6,14 +6,14 @@ import {
   StartPipelineExecutionCommand,
 } from '@aws-sdk/client-codepipeline';
 import { Injectable } from '@nestjs/common';
-import { PipelineDeclaration } from './pipeline.dto';
-import { log } from 'console';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CodePipelineService {
   region = 'ap-northeast-1';
   client: any;
-  constructor() {
+  constructor(private configService: ConfigService) {
+    this.region = this.configService.get<string>('REGION');
     this.client = new CodePipelineClient({ region: this.region });
   }
   async configPipeline({ pipelineName, targetBranch }) {
@@ -68,7 +68,6 @@ export class CodePipelineService {
         stages: pipelineData.stages,
       },
     };
-    console.log(JSON.stringify(updatePipelineInput));
 
     const updatePipeline = new UpdatePipelineCommand(
       updatePipelineInput as any,

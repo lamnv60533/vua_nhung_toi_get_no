@@ -6,9 +6,11 @@ import { PipelineDeclaration } from './pipeline.dto';
 export class CodePipelineController {
   constructor(private readonly codePipeline: CodePipelineService) {}
   @Post('/configuration')
-  getDynamoDb(@Body() pipeline: PipelineDeclaration, @Req() req: Request) {
-    console.log(req.body, pipeline);
-
+  configuration(@Body() pipeline: PipelineDeclaration, @Req() req: Request) {
     return this.codePipeline.configPipeline(pipeline);
+  }
+  @Get('')
+  getPipeline() {
+    return this.codePipeline.getListPipelines(10);
   }
 }

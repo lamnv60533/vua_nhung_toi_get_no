@@ -1,5 +1,6 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { DynamodbService } from './dynamodb.service';
+import { DynamoDBDto } from './dynamoDB.dto';
 
 @Controller('dynamodb')
 export class DynamodbController {
@@ -14,7 +15,7 @@ export class DynamodbController {
     return this.dynamoDBService.getDynamoDBItem(item);
   }
   @Post('/')
-  postDynamoDb() {
-    return this.dynamoDBService.scanDynamoDB();
+  postDynamoDb(@Body('item') item: DynamoDBDto) {
+    return this.dynamoDBService.addNewRecordDynamoDB(item);
   }
 }

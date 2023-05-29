@@ -5,34 +5,49 @@ import {
   PutCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
+import { DynamoDBDto } from './dynamoDB.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DynamodbService {
-  region = 'ap-northeast-1';
-  tableName = 'guide-infra-environment-name';
+  region = '';
+  tableName = '';
   documentClient: any;
-  constructor() {
+  constructor(private configService: ConfigService) {
+    this.region = this.configService.get<string>('REGION');
+    this.tableName = this.configService.get<string>('DYNAMO_TABLE');
     const dynamoDBClient = new DynamoDBClient({ region: this.region });
     this.documentClient = DynamoDBDocumentClient.from(dynamoDBClient);
   }
-  async updateDynamoDB() {
+  async updateDynamoDB(envName, targetBranch) {
     const params = {
-      EnvName: 'develop-a',
-      TargetBranch: 'develop-a',
+      EnvName: envName,
+      TargetBranch: targetBranch,
       UpdatedAt: Date.now(),
     };
     const response = await this.update(this.tableName, params);
-    console.log(response);
+    return response;
+  }
+
+  async addNewRecordDynamoDB(data: DynamoDBDto) {
+    const response = await this.add(
+      this.tableName,
+      data.EnvName,
+      data.TargetBranch,
+    );
+    return response;
   }
 
   async scanDynamoDB() {
-    const response = await this.scan(this.tableName);
+    const response = await this.scan(
+      this.tableName,
+      DynamoDBDto.create('', '', Date.now()),
+    );
     return response;
   }
 
   async getDynamoDBItem(item: string) {
     const response = await this.get(this.tableName, item);
-    console.log(response);
     return response;
   }
 
@@ -44,19 +59,25 @@ export class DynamodbService {
     return await this.documentClient.send(params);
   }
 
-  async scan(tableName) {
+  async scan(tableName, tableObjective) {
+    var projections = Object.keys(tableObjective).join(',');
     const command = new ScanCommand({
-      ProjectionExpression: 'EnvName, TargetBranch, UpdatedAt',
+      ProjectionExpression: projections,
       TableName: tableName,
     });
-
+    let result = [];
     const response = await this.documentClient.send(command);
-    for (const bird of response.Items) {
-      console.log(
-        `${bird.EnvName} - (${bird.TargetBranch}, ${bird.UpdatedAt})`,
+    for (const db of response.Items) {
+      result.push(
+        DynamoDBDto.create(
+          db.EnvName?.S,
+          db?.TargetBranch?.S,
+          db?.UpdatedAt?.N,
+          db?.PipelineName.S,
+        ),
       );
     }
-    return response.Items;
+    return result;
   }
 
   async get(tableName, key) {
@@ -67,11 +88,18 @@ export class DynamodbService {
       },
       TableName: tableName,
     });
-
-    console.log(command);
-
     const response = await this.documentClient.send(command);
-
+    return response;
+  }
+  async add(tableName, envName, targetBranch) {
+    const command = new GetCommand({
+      Key: {
+        EnvName: envName,
+        TargetBranch: targetBranch,
+      },
+      TableName: tableName,
+    });
+    const response = await this.documentClient.send(command);
     return response;
   }
 }
