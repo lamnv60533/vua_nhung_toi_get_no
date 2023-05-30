@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:guide_infra_web_ui/pipeline.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'infra_ui_future_component.dart';
+
+import 'nav_bar.dart';
+
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());
@@ -67,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      drawer: NavBar(),
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
@@ -76,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: const DropdownDemo(),
+      body: const FutureBuilderExample(),
     );
   }
 }
