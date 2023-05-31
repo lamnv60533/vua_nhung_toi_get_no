@@ -1,4 +1,8 @@
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  ScanCommand,
+  UpdateItemCommand,
+} from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
   GetCommand,
@@ -19,10 +23,11 @@ export class DynamodbService {
     const dynamoDBClient = new DynamoDBClient({ region: this.region });
     this.documentClient = DynamoDBDocumentClient.from(dynamoDBClient);
   }
-  async updateDynamoDB(envName, targetBranch) {
-    const params = {
+  async updateDynamoDB(envName, targetBranch, pipelineName) {
+    const params: DynamoDBDto = {
       EnvName: envName,
       TargetBranch: targetBranch,
+      PipelineName: pipelineName,
       UpdatedAt: Date.now(),
     };
     const response = await this.update(this.tableName, params);
@@ -51,12 +56,21 @@ export class DynamodbService {
     return response;
   }
 
-  async update(tableName, item) {
-    const params = new PutCommand({
+  async update(tableName, item: DynamoDBDto) {
+    const data = {
+      EnvName: item.EnvName,
+      TargetBranch: item.TargetBranch,
+      PipelineName: item.PipelineName,
+      UpdatedAt: item.UpdatedAt,
+    };
+    var params = {
       TableName: tableName,
-      Item: item,
-    });
-    return await this.documentClient.send(params);
+      Item: {
+        ...data,
+      },
+    };
+
+    return await this.documentClient.send(new PutCommand(params));
   }
 
   async scan(tableName, tableObjective) {
@@ -73,7 +87,7 @@ export class DynamodbService {
           db.EnvName?.S,
           db?.TargetBranch?.S,
           db?.UpdatedAt?.N,
-          db?.PipelineName.S,
+          db?.PipelineName?.S,
         ),
       );
     }

@@ -9,6 +9,6 @@ export class DynamoDBDto {
   }
   EnvName: string;
   TargetBranch: string;
-  UpdatedAt: Date;
+  UpdatedAt: Number;
   PipelineName: string;
 }

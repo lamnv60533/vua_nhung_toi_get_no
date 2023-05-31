@@ -7,21 +7,34 @@ import {
 } from '@aws-sdk/client-codepipeline';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DynamodbService } from 'src/dynamodb/dynamodb.service';
 
 @Injectable()
 export class CodePipelineService {
   region = 'ap-northeast-1';
   client: any;
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private dynamoDBService: DynamodbService,
+  ) {
     this.region = this.configService.get<string>('REGION');
     this.client = new CodePipelineClient({ region: this.region });
   }
-  async configPipeline({ pipelineName, targetBranch }) {
+  async configPipeline({
+    pipelineName,
+    targetBranch,
+    isStartPipeline,
+    envName,
+  }) {
     const updatedCurrentPipeline = await this.updatePipeline(
       pipelineName,
       targetBranch,
     );
-    return await this.startPipeline(pipelineName);
+    this.dynamoDBService.updateDynamoDB(envName, targetBranch, pipelineName);
+    if (isStartPipeline) {
+      await this.startPipeline(pipelineName);
+    }
+    return updatedCurrentPipeline;
   }
   async getPipelineData(pipelineName: string) {
     const getPipelineInput = {

@@ -7,5 +7,6 @@ import { ConfigModule } from '@nestjs/config';
   imports: [ConfigModule],
   providers: [DynamodbService],
   controllers: [DynamodbController],
+  exports: [DynamodbService],
 })
 export class DynamodbModule {}

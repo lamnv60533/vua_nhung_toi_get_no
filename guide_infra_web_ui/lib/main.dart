@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:guide_infra_web_ui/pipeline.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'infra_ui_future_component.dart';
@@ -71,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      // drawer: NavBar(),
+      drawer: NavBar(),
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
