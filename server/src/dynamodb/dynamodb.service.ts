@@ -1,7 +1,7 @@
 import {
   DynamoDBClient,
+  DynamoDBClientConfig,
   ScanCommand,
-  UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
@@ -11,16 +11,27 @@ import {
 import { Injectable } from '@nestjs/common';
 import { DynamoDBDto } from './dynamoDB.dto';
 import { ConfigService } from '@nestjs/config';
+import {DYNAMO_TABLE, REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV} from "../config";
 
 @Injectable()
 export class DynamodbService {
-  region = '';
   tableName = '';
   documentClient: any;
-  constructor(private configService: ConfigService) {
-    this.region = this.configService.get<string>('REGION');
-    this.tableName = this.configService.get<string>('DYNAMO_TABLE');
-    const dynamoDBClient = new DynamoDBClient({ region: this.region });
+  constructor() {
+    let dynamoDBConfig: DynamoDBClientConfig = {
+      region: REGION,
+    }
+    if (IS_DEV) {
+      dynamoDBConfig =  {
+        region: REGION,
+        credentials: {
+          accessKeyId: AWS_ACCESS_KEY_ID,
+          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        },
+      };
+    }
+    this.tableName = DYNAMO_TABLE;
+    const dynamoDBClient = new DynamoDBClient(dynamoDBConfig);
     this.documentClient = DynamoDBDocumentClient.from(dynamoDBClient);
   }
   async updateDynamoDB(envName, targetBranch, pipelineName) {

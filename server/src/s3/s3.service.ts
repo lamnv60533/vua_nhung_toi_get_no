@@ -1,15 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
-import { log } from 'console';
+import { ListObjectsV2Command, S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
+import {REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET, IS_DEV} from "../config";
 
 @Injectable()
 export class S3Service {
   s3Client: any;
   s3Bucket: string = '';
-  constructor(private configService: ConfigService) {
-    this.s3Client = new S3Client({});
-    this.s3Bucket = this.configService.get<string>('S3_BUCKET');
+  constructor() {
+    let s3Configs: S3ClientConfig = {
+      region: REGION,
+    }
+    if (IS_DEV) {
+      s3Configs = {
+        region: REGION,
+        credentials: {
+          accessKeyId: AWS_ACCESS_KEY_ID,
+          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        },
+      };
+    }
+    this.s3Client = new S3Client(s3Configs);
+    this.s3Bucket = S3_BUCKET;
   }
 
   async getListBuckets() {

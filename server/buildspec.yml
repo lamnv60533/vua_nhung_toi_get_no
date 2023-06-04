@@ -1,0 +1,33 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+      nodejs: 16
+  pre_build:
+    commands:
+      - echo Logging in to dockerhub...
+      - docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO_NAME}
+  build:
+    commands:
+      - echo [`date`] Building the Docker image ...
+      - docker build -f ./Dockerfile -t ${REPOSITORY_URI}:${IMAGE_TAG} .
+      - docker tag ${REPOSITORY_URI}:${IMAGE_TAG} ${REPOSITORY_URI}:ver_${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - echo $(git rev-parse --verify HEAD) > ${VERSION_FILE_PATH}
+      - cat ${VERSION_FILE_PATH}
+
+  post_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - ECR_AUTH_TOKEN=$(aws ecr get-login-password --region ap-northeast-1)
+      - docker login -u AWS -p $ECR_AUTH_TOKEN https://${REPOSITORY_URI}
+      - echo [`date`] Pushing the Docker image to ECR repository ...
+      - docker push ${REPOSITORY_URI}:ver_${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - docker push ${REPOSITORY_URI}:${IMAGE_TAG}
+      - printf '[{"name":"%s","imageUri":"%s"}]' ${ECS_CONTAINER_NAME} ${REPOSITORY_URI}:${IMAGE_TAG} > artifacts.json
+artifacts:
+  files:
+    - artifacts.json
+    - "${VERSION_FILE_PATH}"

@@ -1,0 +1,14 @@
+version: "3.5"
+
+services:
+  guide-infra-api:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: guide-infra-api
+    container_name: ctn-guide-infra-api
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - "./src:/usr/app/src:rw"
