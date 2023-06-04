@@ -1,0 +1,12 @@
+# variables
+account_id                      = "158582744427"
+region                          = "ap-northeast-1"
+project                         = "guide-infra-management"
+service                         = "api"
+s3_bucket_response_json_default = "api"
+ecr_repo_name                   = "guide-infra-management-api-ecr-repo"
+acm_domain                      = "api"
+domain                          = "management.guide.inc"
+dynamo_table                    = "guide-infra-environment-table"
+aws_access_key_id               = "AKIAY5WRRAU6XEIM6XXB"
+aws_secret_access_key           = "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"

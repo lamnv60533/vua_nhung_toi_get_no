@@ -1,0 +1,72 @@
+[
+  {
+    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/${ecr_repo_name}:latest",
+    "name": "${project}-${service}-ecs-container",
+    "cpu": 512,
+    "memoryReservation": 1024,
+    "environment": [
+      {
+        "name": "REGION",
+        "value": "${region}"
+      },
+      {
+        "name": "DYNAMO_TABLE",
+        "value": "${dynamo_table}"
+      },
+      {
+        "name": "S3_BUCKET",
+        "value": "${s3_bucket}"
+      },
+      {
+        "name": "AWS_ACCESS_KEY_ID",
+        "value": "${aws_access_key_id}"
+      },
+      {
+        "name": "AWS_SECRET_ACCESS_KEY",
+        "value": "${aws_secret_access_key}"
+      }
+    ],
+    "command": [],
+    "dnsSearchDomains": [],
+    "dnsServers": [],
+    "dockerSecurityOptions": [],
+    "entryPoint": [],
+    "links": [],
+    "systemControls": [],
+    "ulimits": [
+      {
+        "name": "nofile",
+        "softLimit": 65535,
+        "hardLimit": 65535
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "secretOptions": [],
+      "options": {
+        "awslogs-group": "/ecs/logs/${project}-${service}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "${service}"
+      }
+    },
+    "mountPoints": [],
+    "volumesFrom": [],
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8080,
+        "hostPort": 8080,
+        "protocol": "tcp"
+      }
+    ],
+    "healthCheck": {
+      "command": [
+        "CMD-SHELL",
+        "curl -f http://localhost:8080/api/v1/s3 || exit 1"
+      ],
+      "interval": 5,
+      "retries": 3,
+      "timeout": 5
+    }
+  }
+]
