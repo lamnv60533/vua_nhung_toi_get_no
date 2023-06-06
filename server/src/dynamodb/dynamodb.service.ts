@@ -10,13 +10,12 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 import { DynamoDBDto } from './dynamoDB.dto';
-import { ConfigService } from '@nestjs/config';
-import {DYNAMO_TABLE, REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV} from "../config";
+import { DYNAMO_TABLE, REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV } from "../config";
 
 @Injectable()
 export class DynamodbService {
   tableName = '';
-  documentClient: any;
+  documentClient: DynamoDBClient;
   constructor() {
     let dynamoDBConfig: DynamoDBClientConfig = {
       region: REGION,
@@ -85,7 +84,7 @@ export class DynamodbService {
   }
 
   async scan(tableName, tableObjective) {
-    var projections = Object.keys(tableObjective).join(',');
+    const projections = Object.keys(tableObjective).join(',');
     const command = new ScanCommand({
       ProjectionExpression: projections,
       TableName: tableName,

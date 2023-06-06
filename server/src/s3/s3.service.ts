@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ListObjectsV2Command, S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
-import { ConfigService } from '@nestjs/config';
 import {REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET, IS_DEV} from "../config";
 
 @Injectable()
 export class S3Service {
-  s3Client: any;
+  s3Client: S3Client;
   s3Bucket: string = '';
   constructor() {
     let s3Configs: S3ClientConfig = {

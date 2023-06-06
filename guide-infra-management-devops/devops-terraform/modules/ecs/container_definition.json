@@ -16,6 +16,14 @@
       {
         "name": "S3_BUCKET",
         "value": "${s3_bucket}"
+      },
+      {
+        "name": "TARGET_ACCOUNT_ID",
+        "value": "${target_account_id}"
+      },
+      {
+        "name": "TARGET_ROLE_NAME",
+        "value": "${target_role_name}"
       }
     ],
     "command": [],

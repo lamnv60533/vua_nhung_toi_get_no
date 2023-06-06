@@ -32,3 +32,7 @@ export const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "";
 export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || "";
 
 export const IS_DEV = process.env.NODE_ENV === "development";
+
+export const TARGET_ACCOUNT_ID = process.env.TARGET_ACCOUNT_ID || "";
+
+export const TARGET_ROLE_NAME = process.env.TARGET_ROLE_NAME || "";

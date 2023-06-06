@@ -10,11 +10,11 @@ import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DynamodbService } from 'src/dynamodb/dynamodb.service';
-import { REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV } from "../config";
+import { REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV, TARGET_ACCOUNT_ID, TARGET_ROLE_NAME } from "../config";
 
 @Injectable()
 export class CodePipelineService {
-  client: any;
+  client: CodePipelineClient;
   constructor(
     private configService: ConfigService,
     private dynamoDBService: DynamodbService,
@@ -65,10 +65,6 @@ export class CodePipelineService {
   }
 
   async updatePipeline(pipelineName: string, targetBranch: string) {
-    // const input1 = {
-    //   // StartPipelineExecutionInput
-    //   name: pipelineName, // required
-    // };
     const pipelineDataRsp = (await this.getPipelineData(pipelineName)) as any;
     console.log(pipelineDataRsp);
     pipelineDataRsp.pipeline.stages[0].actions[0].configuration.S3ObjectKey =
@@ -111,18 +107,18 @@ export class CodePipelineService {
   }
 
   private async getCodepipelineClient() {
-  const targetAccountId = '613546001725';
-  const targetRoleName = 'access-s3-bucket-role';
-
-  const credentials = await this.assumeRole(targetAccountId, targetRoleName);
-  return new CodePipelineClient({
-    region: REGION,
-    credentials: {
-      accessKeyId: credentials.AccessKeyId,
-      secretAccessKey: credentials.SecretAccessKey,
-      sessionToken: credentials.SessionToken,
-    },
-  });
+    if (IS_DEV) {
+      return this.client;
+    }
+    const credentials = await this.assumeRole(TARGET_ACCOUNT_ID, TARGET_ROLE_NAME);
+    return new CodePipelineClient({
+      region: REGION,
+      credentials: {
+        accessKeyId: credentials.AccessKeyId,
+        secretAccessKey: credentials.SecretAccessKey,
+        sessionToken: credentials.SessionToken,
+      },
+    });
 }
 
   private async assumeRole(targetAccountId: string, targetRoleName: string) {
@@ -130,6 +126,7 @@ export class CodePipelineService {
     const assumeRoleParams = {
       RoleArn: `arn:aws:iam::${targetAccountId}:role/${targetRoleName}`,
       RoleSessionName: 'AssumedRoleSession',
+      DurationSeconds: 900,
     };
 
     const assumeRoleCommand = new AssumeRoleCommand(assumeRoleParams);

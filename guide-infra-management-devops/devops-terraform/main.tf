@@ -54,9 +54,11 @@ module "ecs" {
     memory        = "1024"
     desired_count = "1"
     env = {
-      dynamo_table = var.dynamo_table
-      region = var.region
-      s3_bucket  = var.s3_bucket_dev_kcmsr_sources
+      dynamo_table      = var.dynamo_table
+      region            = var.region
+      s3_bucket         = var.s3_bucket_dev_kcmsr_sources
+      target_account_id = var.target_account_id
+      target_role_name  = var.target_role_name
     }
   }
 

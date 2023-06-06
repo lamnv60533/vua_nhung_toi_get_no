@@ -36,3 +36,11 @@ variable "vpc" {
 variable "s3_bucket_dev_kcmsr_sources" {
   type = string
 }
+
+variable "target_account_id" {
+  type = string
+}
+
+variable "target_role_name" {
+  type = string
+}
