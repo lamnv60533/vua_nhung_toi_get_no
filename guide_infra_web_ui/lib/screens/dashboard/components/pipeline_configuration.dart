@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 
-import 'infra_ui.dto.dart';
+import '../../../models/infra_ui.dto.dart';
 import 'infra_ui_row.dart';
 import 'package:getwidget/getwidget.dart';
 
@@ -52,6 +52,8 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
 
   @override
   Widget build(BuildContext context) {
+    var marginTop = MediaQuery.of(context).size.height * 0.35;
+    print(marginTop);
     return DefaultTextStyle(
       style: Theme.of(context).textTheme.displayMedium!,
       textAlign: TextAlign.center,
@@ -64,18 +66,19 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
           List<Widget> children;
           if (snapshot.hasData) {
             return snapshot.connectionState == ConnectionState.waiting
-                ? const CircularProgressIndicator()
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 20,
+                    ),
+                  )
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      snapshot.data?[0]!.length,
-                      (index) {
-                        return InfraModelRow(
-                            infraData: snapshot.data?[0][index],
-                            dropdowList: snapshot.data?[1]);
-                      },
-                    ),
+                    children: [
+                      InfraModelRow(
+                          infraData: snapshot.data?[0],
+                          dropdowList: snapshot.data?[1]),
+                    ],
                   );
           } else if (snapshot.hasError) {
             children = <Widget>[
@@ -84,16 +87,16 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
                 color: Colors.red,
                 size: 60,
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text('Error: ${snapshot.error}'),
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Error: Cannot connect to server!'),
               ),
             ];
           } else {
-            children = const <Widget>[
+            children = <Widget>[
               Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: GFLoader(type: GFLoaderType.circle),
+                padding: EdgeInsets.only(top: marginTop),
+                child: const GFLoader(type: GFLoaderType.circle),
               ),
             ];
           }
