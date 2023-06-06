@@ -36,7 +36,7 @@ resource "aws_iam_role" "ecs_task_role" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "AWS": "arn:aws:iam::613546001725:role/access-s3-bucket-role"
+        "AWS": "arn:aws:iam::613546001725:role/cross-account-universal-service-guide-access-role"
       },
       "Effect": "Allow",
       "Sid": "2"
