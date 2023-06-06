@@ -6,6 +6,7 @@ import {
   UpdatePipelineCommand,
   StartPipelineExecutionCommand,
 } from '@aws-sdk/client-codepipeline';
+import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DynamodbService } from 'src/dynamodb/dynamodb.service';
@@ -50,7 +51,8 @@ export class CodePipelineService {
     };
 
     const command = new GetPipelineCommand(getPipelineInput);
-    return this.client.send(command);
+    const codepipelineClient = await this.getCodepipelineClient();
+    return codepipelineClient.send(command);
   }
 
   async getListPipelines(maxResults: number) {
@@ -58,7 +60,8 @@ export class CodePipelineService {
       maxResults: maxResults || 10,
     };
     const command = new ListPipelinesCommand(input);
-    return await this.client.send(command);
+    const codepipelineClient = await this.getCodepipelineClient()
+    return await codepipelineClient.send(command);
   }
 
   async updatePipeline(pipelineName: string, targetBranch: string) {
@@ -92,7 +95,8 @@ export class CodePipelineService {
     const updatePipeline = new UpdatePipelineCommand(
       updatePipelineInput as any,
     );
-    return await this.client.send(updatePipeline);
+    const codepipelineClient = await this.getCodepipelineClient();
+    return codepipelineClient.send(updatePipeline);
   }
 
   async startPipeline(pipelineName: string) {
@@ -102,6 +106,38 @@ export class CodePipelineService {
     };
 
     const command1 = new StartPipelineExecutionCommand(input1);
-    return await this.client.send(command1);
+    const codepipelineClient = await this.getCodepipelineClient();
+    return codepipelineClient.send(command1);
+  }
+
+  private async getCodepipelineClient() {
+  const targetAccountId = '613546001725';
+  const targetRoleName = 'access-s3-bucket-role';
+
+  const credentials = await this.assumeRole(targetAccountId, targetRoleName);
+  return new CodePipelineClient({
+    region: REGION,
+    credentials: {
+      accessKeyId: credentials.AccessKeyId,
+      secretAccessKey: credentials.SecretAccessKey,
+      sessionToken: credentials.SessionToken,
+    },
+  });
+}
+
+  private async assumeRole(targetAccountId: string, targetRoleName: string) {
+    const stsClient = new STSClient({ region: REGION });
+    const assumeRoleParams = {
+      RoleArn: `arn:aws:iam::${targetAccountId}:role/${targetRoleName}`,
+      RoleSessionName: 'AssumedRoleSession',
+    };
+
+    const assumeRoleCommand = new AssumeRoleCommand(assumeRoleParams);
+    const assumeRoleResponse = await stsClient.send(assumeRoleCommand);
+
+    const { AccessKeyId, SecretAccessKey, SessionToken } = assumeRoleResponse.Credentials!;
+
+    // Return the temporary credentials
+    return { AccessKeyId, SecretAccessKey, SessionToken };
   }
 }
