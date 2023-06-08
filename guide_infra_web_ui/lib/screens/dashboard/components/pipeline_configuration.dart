@@ -5,8 +5,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import '../../../models/infra_ui.dto.dart';
-import 'infra_ui_row.dart';
-import 'package:getwidget/getwidget.dart';
+import 'pipeline_row.dart';
 
 class FutureBuilderExample extends StatefulWidget {
   const FutureBuilderExample({super.key});
@@ -32,6 +31,14 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
     return [];
   }
 
+  bool _loadSuccess = false;
+
+  List<OptionModel> optionModels = [OptionModel(code: -1, name: '')];
+
+  List<InfrastructureBranchModel> listTemps = [
+    InfrastructureBranchModel(TargetBranch: "")
+  ];
+
   Future<List<OptionModel>> getAllCategory() async {
     var baseUrl = "$SERVER_URL/s3";
 
@@ -51,63 +58,92 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
   }
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final results = await Future.wait([getAllCategory(), getAllEnv()]);
+        optionModels = results[0] as List<OptionModel>;
+        optionModels.add(OptionModel(code: -1, name: ''));
+        listTemps = results[1] as List<InfrastructureBranchModel>;
+
+        _loadSuccess = true;
+        setState(() {});
+      } catch (ex) {}
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var marginTop = MediaQuery.of(context).size.height * 0.35;
-    print(marginTop);
+    print(optionModels.length);
     return DefaultTextStyle(
-      style: Theme.of(context).textTheme.displayMedium!,
-      textAlign: TextAlign.center,
-      child: FutureBuilder<List<dynamic>>(
-        future: Future.wait([
-          getAllEnv(),
-          getAllCategory()
-        ]), // a previously-obtained Future<String> or null
-        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-          List<Widget> children;
-          if (snapshot.hasData) {
-            return snapshot.connectionState == ConnectionState.waiting
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 20,
-                    ),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      InfraModelRow(
-                          infraData: snapshot.data?[0],
-                          dropdowList: snapshot.data?[1]),
-                    ],
-                  );
-          } else if (snapshot.hasError) {
-            children = <Widget>[
-              const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 60,
-              ),
-              const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Text('Error: Cannot connect to server!'),
-              ),
-            ];
-          } else {
-            children = <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: marginTop),
-                child: const GFLoader(type: GFLoaderType.circle),
-              ),
-            ];
-          }
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: children,
-            ),
-          );
-        },
-      ),
-    );
+        style: Theme.of(context).textTheme.displayMedium!,
+        textAlign: TextAlign.center,
+        child: !_loadSuccess
+            ? CircularProgressIndicator()
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InfraModelRow(
+                    infraData: listTemps,
+                    dropdowList: optionModels,
+                  ),
+                ],
+              ));
   }
 }
+
+
+// FutureBuilder<List<dynamic>>(
+//         future: Future.wait([
+//           getAllEnv(),
+//           getAllCategory()
+//         ]), // a previously-obtained Future<String> or null
+//         builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+//           List<Widget> children;
+//           if (snapshot.hasData) {
+//             return snapshot.connectionState == ConnectionState.waiting
+//                 ? const Center(
+//                     child: CircularProgressIndicator(
+//                       strokeWidth: 20,
+//                     ),
+//                   )
+//                 : Column(
+//                     mainAxisAlignment: MainAxisAlignment.center,
+//                     mainAxisSize: MainAxisSize.min,
+//                     children: [
+//                       InfraModelRow(
+//                           infraData: snapshot.data?[0],
+//                           dropdowList: snapshot.data?[1]),
+//                     ],
+//                   );
+//           } else if (snapshot.hasError) {
+//             children = <Widget>[
+//               const Icon(
+//                 Icons.error_outline,
+//                 color: Colors.red,
+//                 size: 60,
+//               ),
+//               const Padding(
+//                 padding: EdgeInsets.only(top: 16),
+//                 child: Text('Error: Cannot connect to server!'),
+//               ),
+//             ];
+//           } else {
+//             children = <Widget>[
+//               Padding(
+//                 padding: EdgeInsets.only(top: marginTop),
+//                 child: const GFLoader(type: GFLoaderType.circle),
+//               ),
+//             ];
+//           }
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: children,
+//             ),
+//           );
+//         },
+//       ),

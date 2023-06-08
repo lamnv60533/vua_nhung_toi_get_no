@@ -10,18 +10,33 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 import { DynamoDBDto } from './dynamoDB.dto';
-import { DYNAMO_TABLE, REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV } from "../config";
+import {
+  DYNAMO_TABLE,
+  REGION,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  IS_DEV,
+} from '../config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DynamodbService {
   tableName = '';
   documentClient: DynamoDBClient;
-  constructor() {
+  constructor(private configservice: ConfigService) {
+    const REGION = this.configservice.get<string>('REGION');
+    const DYNAMO_TABLE = this.configservice.get<string>('DYNAMO_TABLE');
+    const AWS_ACCESS_KEY_ID =
+      this.configservice.get<string>('AWS_ACCESS_KEY_ID');
+    const AWS_SECRET_ACCESS_KEY = this.configservice.get<string>(
+      'AWS_SECRET_ACCESS_KEY',
+    );
+    const IS_DEV = this.configservice.get<string>('IS_DEV');
     let dynamoDBConfig: DynamoDBClientConfig = {
       region: REGION,
-    }
+    };
     if (IS_DEV) {
-      dynamoDBConfig =  {
+      dynamoDBConfig = {
         region: REGION,
         credentials: {
           accessKeyId: AWS_ACCESS_KEY_ID,
