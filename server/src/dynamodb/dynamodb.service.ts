@@ -10,13 +10,7 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 import { DynamoDBDto } from './dynamoDB.dto';
-import {
-  DYNAMO_TABLE,
-  REGION,
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  IS_DEV,
-} from '../config';
+
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

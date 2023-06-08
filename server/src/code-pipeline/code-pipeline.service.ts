@@ -10,40 +10,38 @@ import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DynamodbService } from 'src/dynamodb/dynamodb.service';
-import {
-  REGION,
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  IS_DEV,
-  TARGET_ACCOUNT_ID,
-  TARGET_ROLE_NAME,
-} from '../config';
-import { log } from 'console';
-
 @Injectable()
 export class CodePipelineService {
   client: CodePipelineClient;
+  REGION: string = '';
+  AWS_ACCESS_KEY_ID: string;
+  IS_DEV: string;
+  TARGET_ACCOUNT_ID: string;
+  TARGET_ROLE_NAME: string;
+  AWS_SECRET_ACCESS_KEY: string;
   constructor(
     private configService: ConfigService,
     private dynamoDBService: DynamodbService,
   ) {
-    const REGION = this.configService.get<string>('REGION');
-    const AWS_ACCESS_KEY_ID =
+    this.REGION = this.configService.get<string>('REGION');
+    this.AWS_ACCESS_KEY_ID =
       this.configService.get<string>('AWS_ACCESS_KEY_ID');
-    const AWS_SECRET_ACCESS_KEY = this.configService.get<string>(
+    this.AWS_SECRET_ACCESS_KEY = this.configService.get<string>(
       'AWS_SECRET_ACCESS_KEY',
     );
-    const IS_DEV = this.configService.get<string>('IS_DEV');
-    console.log(REGION);
+    this.IS_DEV = this.configService.get<string>('IS_DEV');
+    this.TARGET_ACCOUNT_ID =
+      this.configService.get<string>('TARGET_ACCOUNT_ID');
+    this.TARGET_ROLE_NAME = this.configService.get<string>('TARGET_ROLE_NAME');
     let codePipelineConfig: CodePipelineClientConfig = {
-      region: REGION,
+      region: this.REGION,
     };
-    if (IS_DEV) {
+    if (this.IS_DEV) {
       codePipelineConfig = {
-        region: REGION,
+        region: this.REGION,
         credentials: {
-          accessKeyId: AWS_ACCESS_KEY_ID,
-          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+          accessKeyId: this.AWS_ACCESS_KEY_ID,
+          secretAccessKey: this.AWS_SECRET_ACCESS_KEY,
         },
       };
     }
@@ -127,15 +125,15 @@ export class CodePipelineService {
   }
 
   private async getCodepipelineClient() {
-    if (IS_DEV) {
+    if (this.IS_DEV) {
       return this.client;
     }
     const credentials = await this.assumeRole(
-      TARGET_ACCOUNT_ID,
-      TARGET_ROLE_NAME,
+      this.TARGET_ACCOUNT_ID,
+      this.TARGET_ROLE_NAME,
     );
     return new CodePipelineClient({
-      region: REGION,
+      region: this.REGION,
       credentials: {
         accessKeyId: credentials.AccessKeyId,
         secretAccessKey: credentials.SecretAccessKey,
@@ -145,7 +143,7 @@ export class CodePipelineService {
   }
 
   private async assumeRole(targetAccountId: string, targetRoleName: string) {
-    const stsClient = new STSClient({ region: REGION });
+    const stsClient = new STSClient({ region: this.REGION });
     const assumeRoleParams = {
       RoleArn: `arn:aws:iam::${targetAccountId}:role/${targetRoleName}`,
       RoleSessionName: 'AssumedRoleSession',

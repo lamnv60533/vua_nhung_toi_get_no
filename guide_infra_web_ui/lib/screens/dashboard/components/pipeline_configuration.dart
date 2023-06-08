@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:getwidget/components/loader/gf_loader.dart';
+import 'package:getwidget/types/gf_loader_type.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -76,12 +78,14 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
   @override
   Widget build(BuildContext context) {
     var marginTop = MediaQuery.of(context).size.height * 0.35;
-    print(optionModels.length);
     return DefaultTextStyle(
         style: Theme.of(context).textTheme.displayMedium!,
         textAlign: TextAlign.center,
         child: !_loadSuccess
-            ? CircularProgressIndicator()
+            ? Padding(
+                padding: EdgeInsets.only(top: marginTop),
+                child: const GFLoader(type: GFLoaderType.circle),
+              )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
@@ -94,56 +98,3 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
               ));
   }
 }
-
-
-// FutureBuilder<List<dynamic>>(
-//         future: Future.wait([
-//           getAllEnv(),
-//           getAllCategory()
-//         ]), // a previously-obtained Future<String> or null
-//         builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-//           List<Widget> children;
-//           if (snapshot.hasData) {
-//             return snapshot.connectionState == ConnectionState.waiting
-//                 ? const Center(
-//                     child: CircularProgressIndicator(
-//                       strokeWidth: 20,
-//                     ),
-//                   )
-//                 : Column(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     mainAxisSize: MainAxisSize.min,
-//                     children: [
-//                       InfraModelRow(
-//                           infraData: snapshot.data?[0],
-//                           dropdowList: snapshot.data?[1]),
-//                     ],
-//                   );
-//           } else if (snapshot.hasError) {
-//             children = <Widget>[
-//               const Icon(
-//                 Icons.error_outline,
-//                 color: Colors.red,
-//                 size: 60,
-//               ),
-//               const Padding(
-//                 padding: EdgeInsets.only(top: 16),
-//                 child: Text('Error: Cannot connect to server!'),
-//               ),
-//             ];
-//           } else {
-//             children = <Widget>[
-//               Padding(
-//                 padding: EdgeInsets.only(top: marginTop),
-//                 child: const GFLoader(type: GFLoaderType.circle),
-//               ),
-//             ];
-//           }
-//           return Center(
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: children,
-//             ),
-//           );
-//         },
-//       ),

@@ -4,13 +4,6 @@ import {
   S3Client,
   S3ClientConfig,
 } from '@aws-sdk/client-s3';
-import {
-  REGION,
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  S3_BUCKET,
-  IS_DEV,
-} from '../config';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
