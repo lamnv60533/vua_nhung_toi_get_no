@@ -10,15 +10,15 @@ import { ConfigService } from '@nestjs/config';
 export class S3Service {
   s3Client: S3Client;
   s3Bucket: string = '';
-  constructor(private configservice: ConfigService) {
-    const REGION = this.configservice.get<string>('REGION');
-    const S3_BUCKET = this.configservice.get<string>('S3_BUCKET');
+  constructor(private configService: ConfigService) {
+    const REGION = this.configService.get<string>('REGION');
+    const S3_BUCKET = this.configService.get<string>('S3_BUCKET');
     const AWS_ACCESS_KEY_ID =
-      this.configservice.get<string>('AWS_ACCESS_KEY_ID');
-    const AWS_SECRET_ACCESS_KEY = this.configservice.get<string>(
+      this.configService.get<string>('AWS_ACCESS_KEY_ID');
+    const AWS_SECRET_ACCESS_KEY = this.configService.get<string>(
       'AWS_SECRET_ACCESS_KEY',
     );
-    const IS_DEV = this.configservice.get<string>('IS_DEV');
+    const IS_DEV = this.configService.get<boolean>('IS_DEV');
     let s3Configs: S3ClientConfig = {
       region: REGION,
     };

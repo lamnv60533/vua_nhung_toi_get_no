@@ -17,15 +17,15 @@ import { ConfigService } from '@nestjs/config';
 export class DynamodbService {
   tableName = '';
   documentClient: DynamoDBClient;
-  constructor(private configservice: ConfigService) {
-    const REGION = this.configservice.get<string>('REGION');
-    const DYNAMO_TABLE = this.configservice.get<string>('DYNAMO_TABLE');
+  constructor(private configService: ConfigService) {
+    const REGION = this.configService.get<string>('REGION');
+    const DYNAMO_TABLE = this.configService.get<string>('DYNAMO_TABLE');
     const AWS_ACCESS_KEY_ID =
-      this.configservice.get<string>('AWS_ACCESS_KEY_ID');
-    const AWS_SECRET_ACCESS_KEY = this.configservice.get<string>(
+      this.configService.get<string>('AWS_ACCESS_KEY_ID');
+    const AWS_SECRET_ACCESS_KEY = this.configService.get<string>(
       'AWS_SECRET_ACCESS_KEY',
     );
-    const IS_DEV = this.configservice.get<string>('IS_DEV');
+    const IS_DEV = this.configService.get<boolean>('IS_DEV');
     let dynamoDBConfig: DynamoDBClientConfig = {
       region: REGION,
     };

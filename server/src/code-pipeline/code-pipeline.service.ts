@@ -15,7 +15,7 @@ export class CodePipelineService {
   client: CodePipelineClient;
   REGION: string = '';
   AWS_ACCESS_KEY_ID: string;
-  IS_DEV: string;
+  IS_DEV: boolean;
   TARGET_ACCOUNT_ID: string;
   TARGET_ROLE_NAME: string;
   AWS_SECRET_ACCESS_KEY: string;
@@ -29,7 +29,7 @@ export class CodePipelineService {
     this.AWS_SECRET_ACCESS_KEY = this.configService.get<string>(
       'AWS_SECRET_ACCESS_KEY',
     );
-    this.IS_DEV = this.configService.get<string>('IS_DEV');
+    this.IS_DEV = this.configService.get<boolean>('IS_DEV');
     this.TARGET_ACCOUNT_ID =
       this.configService.get<string>('TARGET_ACCOUNT_ID');
     this.TARGET_ROLE_NAME = this.configService.get<string>('TARGET_ROLE_NAME');
