@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:guide_infra_web_ui/screens/dashboard/components/pipeline_configuration.dart';
 import 'package:guide_infra_web_ui/responsive.dart';
-import 'package:guide_infra_web_ui/screens/dashboard/components/my_fields.dart';
-import 'package:guide_infra_web_ui/screens/dashboard/components/recent_files.dart';
-import 'package:guide_infra_web_ui/screens/dashboard/components/storage_details.dart';
 import 'package:guide_infra_web_ui/screens/header.dart';
 
 import '../../constants.dart';
@@ -31,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
                       FutureBuilderExample(),
                       if (Responsive.isMobile(context))
                         SizedBox(height: defaultPadding),
-                      if (Responsive.isMobile(context)) StorageDetails(),
+                      // if (Responsive.isMobile(context)) StorageDetails(),
                     ],
                   ),
                 ),

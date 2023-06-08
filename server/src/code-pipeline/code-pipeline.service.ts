@@ -10,7 +10,15 @@ import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DynamodbService } from 'src/dynamodb/dynamodb.service';
-import { REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, IS_DEV, TARGET_ACCOUNT_ID, TARGET_ROLE_NAME } from "../config";
+import {
+  REGION,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  IS_DEV,
+  TARGET_ACCOUNT_ID,
+  TARGET_ROLE_NAME,
+} from '../config';
+import { log } from 'console';
 
 @Injectable()
 export class CodePipelineService {
@@ -19,9 +27,17 @@ export class CodePipelineService {
     private configService: ConfigService,
     private dynamoDBService: DynamodbService,
   ) {
+    const REGION = this.configService.get<string>('REGION');
+    const AWS_ACCESS_KEY_ID =
+      this.configService.get<string>('AWS_ACCESS_KEY_ID');
+    const AWS_SECRET_ACCESS_KEY = this.configService.get<string>(
+      'AWS_SECRET_ACCESS_KEY',
+    );
+    const IS_DEV = this.configService.get<string>('IS_DEV');
+    console.log(REGION);
     let codePipelineConfig: CodePipelineClientConfig = {
       region: REGION,
-    }
+    };
     if (IS_DEV) {
       codePipelineConfig = {
         region: REGION,
@@ -29,7 +45,7 @@ export class CodePipelineService {
           accessKeyId: AWS_ACCESS_KEY_ID,
           secretAccessKey: AWS_SECRET_ACCESS_KEY,
         },
-      }
+      };
     }
     this.client = new CodePipelineClient(codePipelineConfig);
   }
@@ -38,7 +54,11 @@ export class CodePipelineService {
       pipelineName,
       targetBranch,
     );
-    await this.dynamoDBService.updateDynamoDB(envName, targetBranch, pipelineName);
+    await this.dynamoDBService.updateDynamoDB(
+      envName,
+      targetBranch,
+      pipelineName,
+    );
     if (runPipeline) {
       await this.startPipeline(pipelineName);
     }
@@ -60,7 +80,7 @@ export class CodePipelineService {
       maxResults: maxResults || 10,
     };
     const command = new ListPipelinesCommand(input);
-    const codepipelineClient = await this.getCodepipelineClient()
+    const codepipelineClient = await this.getCodepipelineClient();
     return await codepipelineClient.send(command);
   }
 
@@ -110,7 +130,10 @@ export class CodePipelineService {
     if (IS_DEV) {
       return this.client;
     }
-    const credentials = await this.assumeRole(TARGET_ACCOUNT_ID, TARGET_ROLE_NAME);
+    const credentials = await this.assumeRole(
+      TARGET_ACCOUNT_ID,
+      TARGET_ROLE_NAME,
+    );
     return new CodePipelineClient({
       region: REGION,
       credentials: {
@@ -119,7 +142,7 @@ export class CodePipelineService {
         sessionToken: credentials.SessionToken,
       },
     });
-}
+  }
 
   private async assumeRole(targetAccountId: string, targetRoleName: string) {
     const stsClient = new STSClient({ region: REGION });
@@ -132,7 +155,8 @@ export class CodePipelineService {
     const assumeRoleCommand = new AssumeRoleCommand(assumeRoleParams);
     const assumeRoleResponse = await stsClient.send(assumeRoleCommand);
 
-    const { AccessKeyId, SecretAccessKey, SessionToken } = assumeRoleResponse.Credentials!;
+    const { AccessKeyId, SecretAccessKey, SessionToken } =
+      assumeRoleResponse.Credentials!;
 
     // Return the temporary credentials
     return { AccessKeyId, SecretAccessKey, SessionToken };

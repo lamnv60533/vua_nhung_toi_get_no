@@ -1,15 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { ListObjectsV2Command, S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
-import {REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET, IS_DEV} from "../config";
+import {
+  ListObjectsV2Command,
+  S3Client,
+  S3ClientConfig,
+} from '@aws-sdk/client-s3';
+import {
+  REGION,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  S3_BUCKET,
+  IS_DEV,
+} from '../config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class S3Service {
   s3Client: S3Client;
   s3Bucket: string = '';
-  constructor() {
+  constructor(private configservice: ConfigService) {
+    const REGION = this.configservice.get<string>('REGION');
+    const S3_BUCKET = this.configservice.get<string>('S3_BUCKET');
+    const AWS_ACCESS_KEY_ID =
+      this.configservice.get<string>('AWS_ACCESS_KEY_ID');
+    const AWS_SECRET_ACCESS_KEY = this.configservice.get<string>(
+      'AWS_SECRET_ACCESS_KEY',
+    );
+    const IS_DEV = this.configservice.get<string>('IS_DEV');
     let s3Configs: S3ClientConfig = {
       region: REGION,
-    }
+    };
     if (IS_DEV) {
       s3Configs = {
         region: REGION,

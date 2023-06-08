@@ -6,6 +6,12 @@ class OptionModel {
     this.code = 0,
     this.name = "",
   });
+
+  @override
+  operator ==(other) => other is OptionModel && code == other.code;
+
+  @override
+  int get hashCode => code;
 }
 
 class InfrastructureBranchModel {
