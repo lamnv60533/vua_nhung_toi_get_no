@@ -192,12 +192,15 @@ class _InfraModelRowState extends State<InfraModelRow> {
                               DataCell(
                                 GFButton(
                                     onPressed: () {
-                                      showalert = true;
-                                      message = "change and release";
-                                      release = true;
-                                      pipelineName = env.PipelineName;
-                                      targetBranch = selectOptions[index].name;
-                                      envName = env.EnvName;
+                                      setState(() {
+                                        showalert = true;
+                                        message = "change and release";
+                                        release = true;
+                                        pipelineName = env.PipelineName;
+                                        targetBranch =
+                                            selectOptions[index].name;
+                                        envName = env.EnvName;
+                                      });
                                     },
                                     child: const Text("Release")),
                               ),
