@@ -18,8 +18,8 @@ class SideMenu extends StatelessWidget {
                     child: Container(
                         alignment: Alignment.topLeft,
                         child: Image.asset(
-                            "assets/images/logo-1.png",
-                            height: 40,
+                            "assets/images/guide-logo.png",
+                            height: 30,
                         ),
                     ),
                 ),
