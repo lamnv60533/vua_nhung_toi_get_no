@@ -16,10 +16,10 @@ class SideMenu extends StatelessWidget {
                 height: 100,
                 child: DrawerHeader(
                     child: Container(
-                        alignment: Alignment.topLeft,
+                        alignment: Alignment.topCenter,
                         child: Image.asset(
-                            "assets/images/logo-1.png",
-                            height: 40,
+                            "assets/images/guide-logo.png",
+                            height: 30,
                         ),
                     ),
                 ),
