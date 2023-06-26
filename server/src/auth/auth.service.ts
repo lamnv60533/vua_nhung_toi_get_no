@@ -113,8 +113,14 @@ export class AuthService {
       console.log(error);
     });
     const { session_state, access_token } = (resutl as any)?.data;
-
-    return this.#instropectToken(access_token, session_state);
+    if (access_token) {
+      return this.#instropectToken(access_token, session_state);
+    } else {
+      return {
+        code: 400,
+        message: 'Access token is required',
+      };
+    }
   }
 
   async #instropectToken(accessToken: string, state) {
