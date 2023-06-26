@@ -4,6 +4,7 @@ import 'package:guide_infra_web_ui/models/user.dto.dart';
 import 'package:guide_infra_web_ui/providers/auth.dart';
 import 'package:guide_infra_web_ui/util/widgets.dart';
 import 'package:provider/provider.dart';
+import 'dart:js' as js;
 
 class Login extends StatefulWidget {
   @override
@@ -57,25 +58,26 @@ class _LoginState extends State<Login> {
     );
 
     doLogin() {
-      final form = formKey.currentState;
-
-      if (form!.validate()) {
-        form.save();
-
-        final Future successfulMessage = auth.login(_username, _password);
-
-        print(successfulMessage);
-        successfulMessage.then((response) {
-          print(response);
-          if (response['status']) {
-            User user = response['user'];
-            Provider.of<UserProvider>(context, listen: false).setUser(user);
-            Navigator.pushReplacementNamed(context, '/dashboard');
-          }
-        });
-      } else {
-        print("form is invalid");
-      }
+      // final form = formKey.currentState;
+      //
+      // if (form!.validate()) {
+      //   form.save();
+      //
+      //   final Future successfulMessage = auth.login(_username, _password);
+      //
+      //   print(successfulMessage);
+      //   successfulMessage.then((response) {
+      //     print(response);
+      //     if (response['status']) {
+      //       User user = response['user'];
+      //       Provider.of<UserProvider>(context, listen: false).setUser(user);
+      //       Navigator.pushReplacementNamed(context, '/dashboard');
+      //     }
+      //   });
+      // } else {
+      //   print("form is invalid");
+      // }
+      js.context.callMethod('open', ['http://localhost:3000/api/v1/oauth/login', '_self']);
     }
 
     return SafeArea(

@@ -1,15 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Req,
-  Res,
-  Response,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import UserAuth from './models/user';
+import { Response } from 'express';
 
 @Controller('oauth')
 export class AuthController {
@@ -26,7 +18,11 @@ export class AuthController {
   }
 
   @Get('/login-callback')
-  getLoginCallback(@Query('state') state: string, @Query('code') code: string) {
-    return this.authService.handleLoginCallback(state, code);
+  getLoginCallback(
+    @Query('state') state: string,
+    @Query('code') code: string,
+    @Res() res: Response,
+  ) {
+    return this.authService.handleLoginCallback(state, code, res);
   }
 }

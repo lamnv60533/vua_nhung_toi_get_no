@@ -9,6 +9,8 @@ import { InfraSessions, UserSession } from './models/session';
 import UserAuth from './models/user';
 import { JwtService } from '@nestjs/jwt';
 const dynamo_table = 'guide-infra-management-sessions';
+import { Response } from 'express';
+
 @Injectable()
 export class AuthService {
   KEYCLOAK_BASE_URL = '';
@@ -47,7 +49,7 @@ export class AuthService {
     return response.redirect(KEYCLOAK_URL);
   }
 
-  async handleLoginCallback(state: string, code: string) {
+  async handleLoginCallback(state: string, code: string, res: Response) {
     const getTempSessionCommnand = new GetCommand({
       Key: {
         code: state,
@@ -82,7 +84,8 @@ export class AuthService {
         const accessToken = response.data.access_token;
         console.log(accessToken);
 
-        return this.#instropectToken(accessToken, state);
+        // return this.#instropectToken(accessToken, state);
+        return res.redirect('http://localhost:52311/dashboard');
       })
       .catch((error) => {
         console.log(error);
