@@ -43,6 +43,8 @@ dependencies:
   fl_chart: ^0.62.0
   provider: ^6.0.5
   simple_animations: ^5.0.1
+  shared_preferences: ^2.1.2
+  keycloak_flutter: ^0.0.19
 
 dev_dependencies:
   flutter_test:

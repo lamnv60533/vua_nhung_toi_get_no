@@ -7,6 +7,7 @@ import { CodePipelineService } from './code-pipeline/code-pipeline.service';
 import { DynamodbService } from './dynamodb/dynamodb.service';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from "./health/health.module";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { HealthModule } from "./health/health.module";
     CodePipelineModule,
     S3Module,
     ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule,
   ],
   controllers: [],
   providers: [S3Service, DynamodbService, CodePipelineService],

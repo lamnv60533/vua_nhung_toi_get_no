@@ -71,7 +71,13 @@ export class DynamodbService {
   }
 
   async getDynamoDBItem(item: string) {
-    const response = await this.get(this.tableName, item);
+    const command = new GetCommand({
+      Key: {
+        EnvName: item,
+      },
+      TableName: this.tableName,
+    });
+    const response = await this.get(command);
     return response;
   }
 
@@ -113,17 +119,11 @@ export class DynamodbService {
     return result;
   }
 
-  async get(tableName, key) {
-    const command = new GetCommand({
-      Key: {
-        EnvName: key,
-        TargetBranch: 'develop-a',
-      },
-      TableName: tableName,
-    });
+  async get(command: GetCommand) {
     const response = await this.documentClient.send(command);
     return response;
   }
+
   async add(tableName, envName, targetBranch) {
     const command = new GetCommand({
       Key: {
@@ -132,6 +132,10 @@ export class DynamodbService {
       },
       TableName: tableName,
     });
+    const response = await this.documentClient.send(command);
+    return response;
+  }
+  async addItem(command: PutCommand) {
     const response = await this.documentClient.send(command);
     return response;
   }
