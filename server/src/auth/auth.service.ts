@@ -11,6 +11,16 @@ import { JwtService } from '@nestjs/jwt';
 const dynamo_table = 'guide-infra-management-sessions';
 import { Response } from 'express';
 
+export interface IFailedResponse {
+  success: boolean;
+  error: Object;
+}
+
+export interface ISucceedResponse {
+  success: boolean;
+  data: Object;
+}
+
 @Injectable()
 export class AuthService {
   KEYCLOAK_BASE_URL = '';
@@ -45,8 +55,52 @@ export class AuthService {
     await this.dynamoDBService.addItem(sessionCommand);
     // call to keycloak
     const KEYCLOAK_URL = `${this.KEYCLOAK_BASE_URL}/${this.KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${this.KEYCLOAK_CLIENT_ID}&redirect_uri=${this.KEYCLOAK_CALLBACK_URL}&response_type=code&scope=openid&state=${code}`;
-    console.log(KEYCLOAK_URL);
     return response.redirect(KEYCLOAK_URL);
+  }
+
+  async verifyToken({ token }): Promise<ISucceedResponse | IFailedResponse> {
+    console.log('===== ???', token);
+    if (token) {
+      const command = new GetCommand({
+        Key: {
+          code: token,
+        },
+        TableName: dynamo_table,
+      });
+      const response = (await this.dynamoDBService.get(command)) as any;
+      if (response?.Item) {
+        const ttl = response.exp;
+        const currentTime = +new Date().getTime();
+        if (ttl > currentTime) {
+          return {
+            success: false,
+            error: {
+              message: 'Token had expired.',
+            },
+          };
+        }
+        const item = response?.Item;
+        const userSession: UserSession = {
+          access_token: item.user_token,
+          username: item.username,
+          realm_access: item.realm_access,
+          resource_access: item.resource_access,
+          email: item.email,
+        };
+        return {
+          success: true,
+          data: userSession,
+        };
+      }
+
+      return response;
+    }
+    return {
+      success: false,
+      error: {
+        message: 'Token had expired.',
+      },
+    };
   }
 
   async handleLoginCallback(state: string, code: string, res: Response) {
@@ -58,7 +112,7 @@ export class AuthService {
     });
     const tempSession = await this.dynamoDBService.get(getTempSessionCommnand);
     if (tempSession) {
-      console.log(tempSession);
+      // console.log(tempSession);
     }
     let data = qs.stringify({
       grant_type: 'authorization_code',
@@ -80,12 +134,12 @@ export class AuthService {
 
     axios
       .request(config)
-      .then((response) => {
+      .then(async (response) => {
         const accessToken = response.data.access_token;
-        console.log(accessToken);
+        // console.log(accessToken);
 
-        // return this.#instropectToken(accessToken, state);
-        return res.redirect('http://localhost:52311/dashboard');
+        await this.#instropectToken(accessToken, state);
+        return res.redirect('http://localhost:5555/splash?state=' + state);
       })
       .catch((error) => {
         console.log(error);
@@ -159,12 +213,13 @@ export class AuthService {
       Item: {
         code: state,
         ...sessionData,
-        access_token: userToken,
+        access_token: accessToken,
+        user_token: userToken,
       },
     });
 
     const userSession: UserSession = {
-      access_token: userToken,
+      access_token: accessToken,
       username: sessionData.username,
       realm_access: sessionData.realm_access,
       resource_access: sessionData.resource_access,
@@ -176,6 +231,6 @@ export class AuthService {
   }
 
   async #generateJwtSession(payload) {
-    return await this.jwtService.signAsync(payload);
+    return await this.jwtService.signAsync(payload, { expiresIn: '3d' });
   }
 }

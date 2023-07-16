@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { DynamodbModule } from 'src/dynamodb/dynamodb.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/config/constants';
+import { AuthGuard } from './auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -16,7 +18,13 @@ import { jwtConstants } from 'src/config/constants';
       signOptions: { expiresIn: '60s' },
     }),
   ],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

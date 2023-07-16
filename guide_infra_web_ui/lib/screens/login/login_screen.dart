@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:guide_infra_web_ui/controllers/AuthenticationController.dart';
-import 'package:guide_infra_web_ui/models/user.dto.dart';
-import 'package:guide_infra_web_ui/providers/auth.dart';
+import 'package:guide_infra_web_ui/services/auth_service.dart';
 import 'package:guide_infra_web_ui/util/widgets.dart';
 import 'package:provider/provider.dart';
-import 'dart:js' as js;
+// ignore: avoid_web_libraries_in_flutter
+import "dart:js" as js;
 
 class Login extends StatefulWidget {
   @override
@@ -12,13 +11,12 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final formKey = new GlobalKey<FormState>();
-
-  late String _username, _password;
+  final formKey = GlobalKey<FormState>();
+  late String _username = '', _password = '';
 
   @override
   Widget build(BuildContext context) {
-    AuthProvider auth = Provider.of<AuthProvider>(context);
+    AuthService auth = Provider.of<AuthService>(context);
 
     final usernameField = TextFormField(
       autofocus: false,
@@ -50,9 +48,7 @@ class _LoginState extends State<Login> {
           // padding: EdgeInsets.all(0.0),
           child: const Text("Forgot password?",
               style: TextStyle(fontWeight: FontWeight.w300)),
-          onPressed: () {
-//            Navigator.pushReplacementNamed(context, '/reset-password');
-          },
+          onPressed: () {},
         ),
       ],
     );
@@ -63,7 +59,9 @@ class _LoginState extends State<Login> {
       // if (form!.validate()) {
       //   form.save();
       //
-      //   final Future successfulMessage = auth.login(_username, _password);
+      // final Future successfulMessage = auth.login(true);
+
+      //
       //
       //   print(successfulMessage);
       //   successfulMessage.then((response) {
@@ -77,7 +75,8 @@ class _LoginState extends State<Login> {
       // } else {
       //   print("form is invalid");
       // }
-      js.context.callMethod('open', ['http://localhost:3000/api/v1/oauth/login', '_self']);
+      js.context.callMethod(
+          'open', ['http://localhost:3000/api/v1/oauth/login', '_self']);
     }
 
     return SafeArea(
@@ -90,7 +89,7 @@ class _LoginState extends State<Login> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: 400,
                   child: Form(
                     key: formKey,
@@ -106,9 +105,7 @@ class _LoginState extends State<Login> {
                         const SizedBox(height: 5.0),
                         passwordField,
                         const SizedBox(height: 20.0),
-                        auth.loggedInStatus == Status.Authenticating
-                            ? loading
-                            : longButtons("Login", doLogin),
+                        longButtons("Login", doLogin),
                         const SizedBox(height: 5.0),
                         forgotLabel
                       ],

@@ -1,39 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:getwidget/components/loader/gf_loader.dart';
 import 'package:getwidget/types/gf_loader_type.dart';
-
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:guide_infra_web_ui/models/infra_ui.dto.dart';
+import 'package:guide_infra_web_ui/services/logger.dart';
+import 'package:guide_infra_web_ui/services/pipeline_service.dart';
+import 'package:guide_infra_web_ui/services/s3_service.dart';
 import 'dart:async';
 
-import '../../../models/infra_ui.dto.dart';
 import 'pipeline_row.dart';
 
-class FutureBuilderExample extends StatefulWidget {
-  const FutureBuilderExample({super.key});
+class InfraBranchListWidget extends StatefulWidget {
+  const InfraBranchListWidget({super.key});
   @override
-  State<FutureBuilderExample> createState() => _FutureBuilderExampleState();
+  State<InfraBranchListWidget> createState() => _InfraBranchListWidgetState();
 }
 
-class _FutureBuilderExampleState extends State<FutureBuilderExample> {
-  Future<List<InfrastructureBranchModel>> getAllEnv() async {
-    var baseUrl = "$SERVER_URL/dynamodb";
-    http.Response response = await http.get(Uri.parse(baseUrl));
-    if (response.statusCode == 200) {
-      var jsonData = json.decode(response.body);
-      var tmp = ((jsonData as dynamic) as List<dynamic>).map((dynamic item) {
-        final mapObject = item as Map<String, dynamic>;
-        return InfrastructureBranchModel(
-            EnvName: mapObject["EnvName"],
-            TargetBranch: mapObject["TargetBranch"],
-            PipelineName: mapObject["PipelineName"]);
-      }).toList();
-      return tmp;
-    }
-    return [];
-  }
-
+class _InfraBranchListWidgetState extends State<InfraBranchListWidget> {
   bool _loadSuccess = false;
+  final pipelineService = PipelineService();
+  final s3Service = S3Service();
+  final logger = LogService().logger;
 
   List<OptionModel> optionModels = [OptionModel(code: -1, name: '')];
 
@@ -41,36 +27,20 @@ class _FutureBuilderExampleState extends State<FutureBuilderExample> {
     InfrastructureBranchModel(TargetBranch: "")
   ];
 
-  Future<List<OptionModel>> getAllCategory() async {
-    var baseUrl = "$SERVER_URL/s3";
-
-    http.Response response = await http.get(Uri.parse(baseUrl));
-
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-
-      var s3Objectlist =
-          ((jsonData as dynamic) as List<dynamic>).map((dynamic item) {
-        final mapObject = item as Map<String, dynamic>;
-        return OptionModel(code: mapObject["index"], name: mapObject["value"]);
-      }).toList();
-      return s3Objectlist;
-    }
-    return [];
-  }
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        final results = await Future.wait([getAllCategory(), getAllEnv()]);
+        final results = await Future.wait(
+            [s3Service.getAllCategory(), pipelineService.getAllEnv()]);
         optionModels = results[0] as List<OptionModel>;
         optionModels.add(OptionModel(code: -1, name: ''));
         listTemps = results[1] as List<InfrastructureBranchModel>;
-
         _loadSuccess = true;
         setState(() {});
-      } catch (ex) {}
+      } catch (ex) {
+        logger.e(ex);
+      }
     });
     super.initState();
   }

@@ -1,3 +1,6 @@
+import 'package:json_annotation/json_annotation.dart';
+part 'infra_ui.dto.g.dart';
+
 class OptionModel {
   int code;
   String name;
@@ -14,6 +17,7 @@ class OptionModel {
   int get hashCode => code;
 }
 
+@JsonSerializable()
 class InfrastructureBranchModel {
   String EnvName;
   String TargetBranch;
@@ -24,4 +28,9 @@ class InfrastructureBranchModel {
     this.TargetBranch = "",
     this.PipelineName = "",
   });
+
+  factory InfrastructureBranchModel.fromJson(Map<String, dynamic> json) =>
+      _$InfrastructureBranchModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$InfrastructureBranchModelToJson(this);
 }

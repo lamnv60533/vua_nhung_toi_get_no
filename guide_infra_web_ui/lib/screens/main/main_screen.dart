@@ -6,7 +6,19 @@ import 'package:provider/provider.dart';
 
 import 'components/side_menu.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,9 +35,9 @@ class MainScreen extends StatelessWidget {
                 // and it takes 1/6 part of the screen
                 child: SideMenu(),
               ),
-            Expanded(
+            const Expanded(
               // It takes 5/6 part of the screen
-              flex: 7,
+              flex: 6,
               child: DashboardScreen(),
             ),
           ],

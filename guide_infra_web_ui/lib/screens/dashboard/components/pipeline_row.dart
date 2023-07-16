@@ -1,7 +1,5 @@
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:guide_infra_web_ui/constants.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +8,9 @@ import '../../../models/infra_ui.dto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:getwidget/getwidget.dart';
 
+import '../../../services/api.dart';
+
+// ignore: non_constant_identifier_names
 var SERVER_URL = dotenv.env['SERVER_HOST'];
 
 class InfraModelRow extends StatefulWidget {
@@ -25,25 +26,21 @@ class InfraModelRow extends StatefulWidget {
 
 class _InfraModelRowState extends State<InfraModelRow> {
   List<OptionModel> selectOptions = [OptionModel(code: -1, name: '')];
-
+  var dio = Api().api;
   bool showalert = false;
   Future updatePipeline(
       pipelineName, targetBranch, envName, bool runPipeline) async {
     if (!pipelineName?.isEmpty && !targetBranch?.isEmpty) {
       var baseUrl = "$SERVER_URL/code-pipeline/configuration";
-      http.Response response = await http.post(
-        Uri.parse(baseUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
+      var response = await dio.post(
+        baseUrl,
+        data: {
           "pipelineName": pipelineName,
           "targetBranch": targetBranch,
           "runPipeline": runPipeline,
           "envName": envName,
-        }),
+        },
       );
-      print(response.statusCode);
       if (response.statusCode == 201) {
         _showDialog("Update Successfully!");
       } else {

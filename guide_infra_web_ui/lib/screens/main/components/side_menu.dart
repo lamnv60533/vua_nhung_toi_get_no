@@ -12,18 +12,18 @@ class SideMenu extends StatelessWidget {
       width: 10,
       child: ListView(
         children: [
-            SizedBox(
-                height: 100,
-                child: DrawerHeader(
-                    child: Container(
-                        alignment: Alignment.topCenter,
-                        child: Image.asset(
-                            "assets/images/guide-logo.png",
-                            height: 30,
-                        ),
-                    ),
+          SizedBox(
+            height: 100,
+            child: DrawerHeader(
+              child: Container(
+                alignment: Alignment.topCenter,
+                child: Image.asset(
+                  "assets/images/guide-logo.png",
+                  height: 30,
                 ),
+              ),
             ),
+          ),
           ExpandedListTile(
             title: "Dashboard",
             svgSrc: "assets/icons/menu_dashboard.svg",
@@ -33,7 +33,7 @@ class SideMenu extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
-                  "kc-membersite-renewal",
+                  "kc-membe",
                   style: TextStyle(color: Colors.white54, fontSize: 14),
                 ),
               ),
@@ -112,26 +112,27 @@ class ExpandedListTile extends StatelessWidget {
     return ExpansionTile(
       initiallyExpanded: true,
       trailing: emptyList ? const SizedBox.shrink() : null,
-      title: Container(
-        child: Row(
-          children: [
-            SizedBox(
-              width: 20,
-              child: SvgPicture.asset(
-                svgSrc,
-                colorFilter:
-                    const ColorFilter.mode(Colors.white54, BlendMode.srcIn),
-              ),
+      title: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            child: SvgPicture.asset(
+              svgSrc,
+              colorFilter:
+                  const ColorFilter.mode(Colors.white54, BlendMode.srcIn),
             ),
-            Padding(
+          ),
+          Flexible(
+            child: Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Text(
                 title,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white54),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       children: child ?? [const SizedBox.shrink()],
     );
