@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DynamodbModule } from 'src/dynamodb/dynamodb.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from 'src/config/constants';
 import { AuthGuard } from './auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -12,10 +11,16 @@ import { APP_GUARD } from '@nestjs/core';
   imports: [
     ConfigModule,
     DynamodbModule,
-    JwtModule.register({
-      global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
+    JwtModule.registerAsync({
+      useFactory: (config: ConfigService) => {
+        return {
+          secret: config.get<string>('JWT_SECRET'),
+          signOptions: {
+            expiresIn: parseInt(config.get('JWT_TOKEN_TTL')),
+          },
+        };
+      },
+      inject: [ConfigService],
     }),
   ],
   providers: [

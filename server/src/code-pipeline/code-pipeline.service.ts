@@ -70,7 +70,8 @@ export class CodePipelineService {
 
     const command = new GetPipelineCommand(getPipelineInput);
     const codepipelineClient = await this.getCodepipelineClient();
-    return codepipelineClient.send(command);
+    const data = await codepipelineClient.send(command);
+    return data;
   }
 
   async getListPipelines(maxResults: number) {
@@ -84,9 +85,10 @@ export class CodePipelineService {
 
   async updatePipeline(pipelineName: string, targetBranch: string) {
     const pipelineDataRsp = (await this.getPipelineData(pipelineName)) as any;
-    console.log(pipelineDataRsp);
     pipelineDataRsp.pipeline.stages[0].actions[0].configuration.S3ObjectKey =
       targetBranch;
+    // pipelineDataRsp.pipeline.stages[0].actions[0].configuration.PollForSourceChanges =
+    //   true;
 
     const pipelineData = pipelineDataRsp.pipeline;
     const artifactStore = pipelineData.artifactStore;
@@ -110,7 +112,7 @@ export class CodePipelineService {
       updatePipelineInput as any,
     );
     const codepipelineClient = await this.getCodepipelineClient();
-    return codepipelineClient.send(updatePipeline);
+    // return codepipelineClient.send(updatePipeline);
   }
 
   async startPipeline(pipelineName: string) {

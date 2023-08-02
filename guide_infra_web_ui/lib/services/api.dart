@@ -19,8 +19,7 @@ class Api {
       options.headers['Content-Type'] = 'application/json; charset=UTF-8';
       return handler.next(options);
     }, onError: (DioException error, handler) async {
-      if ((error.response?.statusCode == 401 &&
-          error.response?.data['message'] == "Invalid JWT")) {
+      if ((error.response?.statusCode == 401)) {
         // if (await _storage.containsKey(key: 'refreshToken')) {
         //   if (await refreshToken()) {
         //     return handler.resolve(await _retry(error.requestOptions));

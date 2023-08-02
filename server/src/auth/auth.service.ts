@@ -59,7 +59,6 @@ export class AuthService {
   }
 
   async verifyToken({ token }): Promise<ISucceedResponse | IFailedResponse> {
-    console.log('===== ???', token);
     if (token) {
       const command = new GetCommand({
         Key: {
@@ -136,10 +135,11 @@ export class AuthService {
       .request(config)
       .then(async (response) => {
         const accessToken = response.data.access_token;
-        // console.log(accessToken);
-
         await this.#instropectToken(accessToken, state);
-        return res.redirect('http://localhost:5555/splash?state=' + state);
+        const REDIRECT_URL =
+          this.configService.get('REDIRECT_URL') ||
+          'http://localhost:5555/splash';
+        return res.redirect(`REDIRECT_URL?state= ${state}`);
       })
       .catch((error) => {
         console.log(error);
@@ -206,6 +206,8 @@ export class AuthService {
 
     const userToken = await this.#generateJwtSession({
       id: sessionData.email,
+      roles: sessionData?.resource_access,
+      realm_access: sessionData?.realm_access,
     });
 
     const sessionCommand = new PutCommand({

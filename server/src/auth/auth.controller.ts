@@ -38,8 +38,6 @@ export class AuthController {
   @Public()
   @Post('/verify-token')
   verifyToken(@Body() token: any) {
-    console.log(token);
-
     return this.authService.verifyToken(token);
   }
 }
