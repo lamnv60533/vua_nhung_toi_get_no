@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:getwidget/components/loader/gf_loader.dart';
 import 'package:getwidget/types/gf_loader_type.dart';
+import 'package:go_router/go_router.dart';
 import 'package:guide_infra_web_ui/models/infra_ui.dto.dart';
 import 'package:guide_infra_web_ui/services/logger.dart';
 import 'package:guide_infra_web_ui/services/pipeline_service.dart';
@@ -31,15 +33,21 @@ class _InfraBranchListWidgetState extends State<InfraBranchListWidget> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        final results = await Future.wait(
-            [s3Service.getAllCategory(), pipelineService.getAllEnv()]);
+        final results = await Future.wait([
+          s3Service.getAllCategory(),
+          pipelineService.getAllEnv(),
+        ]);
         optionModels = results[0] as List<OptionModel>;
         optionModels.add(OptionModel(code: -1, name: ''));
         listTemps = results[1] as List<InfrastructureBranchModel>;
         _loadSuccess = true;
         setState(() {});
-      } catch (ex) {
-        logger.e(ex);
+      } catch (error) {
+        final ex = error as DioException;
+        logger.e(error);
+        if (ex.response?.statusCode == 401) {
+          context.go('/login');
+        }
       }
     });
     super.initState();

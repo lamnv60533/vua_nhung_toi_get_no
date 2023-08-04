@@ -14,7 +14,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    // User user = Provider.of<UserProvider>(context).user;
     return SafeArea(
       child: SingleChildScrollView(
         primary: false,

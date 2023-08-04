@@ -22,6 +22,7 @@ class AppService with ChangeNotifier {
   bool _loginState = false;
   bool _initialized = false;
   bool _onboarding = false;
+  String currentUser = '';
 
   AppService(this.sharedPreferences);
 
@@ -32,6 +33,12 @@ class AppService with ChangeNotifier {
   set loginState(bool state) {
     sharedPreferences.setBool(LOGIN_KEY, state);
     _loginState = state;
+    notifyListeners();
+  }
+
+  set userName(String name) {
+    sharedPreferences.setString("username", name);
+    currentUser = name;
     notifyListeners();
   }
 

@@ -69,12 +69,6 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(
           create: (context) => MenuAppController(),
         ),
-        // ChangeNotifierProvider(
-        //   create: (context) => AuthProvider(),
-        // ),
-        // ChangeNotifierProvider(
-        //   create: (context) => UserProvider(),
-        // ),
       ],
       child: Builder(
         builder: (context) {

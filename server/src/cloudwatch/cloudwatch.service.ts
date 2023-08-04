@@ -1,26 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import {
-  CloudWatchClient,
-  CloudWatchClientConfig,
-  ListMetricsCommand,
-} from '@aws-sdk/client-cloudwatch';
 import { ConfigService } from '@nestjs/config';
 import {
-  ActivateEventSourceCommand,
   EventBridgeClient,
   EventBridgeClientConfig,
-  ListEventBusesCommand,
   ListRulesCommand,
   ListRulesCommandInput,
   ListRulesCommandOutput,
   ListTargetsByRuleCommand,
   PutRuleCommand,
 } from '@aws-sdk/client-eventbridge';
-import { log } from 'console';
 
 @Injectable()
 export class CloudwatchService {
-  client: CloudWatchClient;
   eventClient: EventBridgeClient;
   REGION: any;
   AWS_ACCESS_KEY_ID: any;
@@ -39,32 +30,13 @@ export class CloudwatchService {
     this.TARGET_ACCOUNT_ID =
       this.configService.get<string>('TARGET_ACCOUNT_ID');
     this.TARGET_ROLE_NAME = this.configService.get<string>('TARGET_ROLE_NAME');
-    let cloudWatchClientConfig: CloudWatchClientConfig = {
-      region: this.REGION,
-    };
 
     let eventBridgeClientConfig: EventBridgeClientConfig = {
       region: this.REGION,
     };
-    if (this.IS_DEV) {
-      cloudWatchClientConfig = {
-        region: this.REGION,
-        credentials: {
-          accessKeyId: this.AWS_ACCESS_KEY_ID,
-          secretAccessKey: this.AWS_SECRET_ACCESS_KEY,
-        },
-      };
-    }
-    this.client = new CloudWatchClient(cloudWatchClientConfig);
     this.eventClient = new EventBridgeClient(eventBridgeClientConfig);
   }
 
-  async test() {
-    return this.handleTriggerEventForChangeSource(
-      'kc-member-site-src.develop-performance',
-      'kc-member-site-src.develop-september-2023',
-    );
-  }
   async handleTriggerEventForChangeSource(
     currentS3Name: string,
     targetS3Name: string,
@@ -75,7 +47,6 @@ export class CloudwatchService {
       const key = eventPattern?.detail?.requestParameters?.key;
       return key && key?.includes(currentS3Name);
     });
-    console.log('========', currentEventWatch);
 
     if (currentEventWatch.length) {
       const currentEventWatchName = currentEventWatch[0].Name;
@@ -84,16 +55,10 @@ export class CloudwatchService {
       const eventPattern = JSON.parse(targetEventWatch.EventPattern);
       const currentKey = eventPattern.detail.requestParameters.key;
 
-      console.log('===', currentKey);
-
       const tmp = currentKey.map((x) =>
         x === currentS3Name ? targetS3Name : x,
       );
-      console.log('===', tmp);
-
       eventPattern.detail.requestParameters.key = tmp;
-
-      console.log('====', JSON.stringify(eventPattern), currentEventWatchName);
 
       const command = new PutRuleCommand({
         EventPattern: JSON.stringify(eventPattern),
@@ -103,10 +68,12 @@ export class CloudwatchService {
     }
   }
 
-  async getCloudWatchEvent(): Promise<ListRulesCommandOutput> {
+  async getCloudWatchEvent(
+    prefix: string = 'codepipeline-',
+  ): Promise<ListRulesCommandOutput> {
     const input: ListRulesCommandInput = {
       // ListEventBusesRequest
-      NamePrefix: 'codepipeline-',
+      NamePrefix: prefix,
       // NextToken: "STRING_VALUE",
       Limit: 50,
     };
@@ -115,6 +82,7 @@ export class CloudwatchService {
       return await this.eventClient.send(command);
     } catch (err) {
       console.error(err);
+      throw err;
     }
   }
   putRuleCommand = async (command) => {

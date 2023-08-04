@@ -5,9 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import { DynamodbModule } from 'src/dynamodb/dynamodb.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { CloudwatchModule } from 'src/cloudwatch/cloudwatch.module';
+import { AssumeRoleModule } from 'src/assume-role/assume-role.module';
 
 @Module({
-  imports: [ConfigModule, DynamodbModule],
+  imports: [DynamodbModule, CloudwatchModule, AssumeRoleModule],
   controllers: [CodePipelineController],
   providers: [CodePipelineService],
 })

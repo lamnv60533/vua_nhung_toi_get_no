@@ -16,6 +16,6 @@ export class CodePipelineController {
   @Get('')
   @Public()
   getPipeline() {
-    return this.codePipeline.getListPipelines(20);
+    return this.codePipeline.getListPipelines(50);
   }
 }

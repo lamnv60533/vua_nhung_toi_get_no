@@ -6,7 +6,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [],
   providers: [S3Service],
   controllers: [S3Controller],
 })

@@ -12,17 +12,14 @@ class PipelineService {
     final api = Api().api;
     var response = await api.get(baseUrl);
     if (response.statusCode == 200) {
-      try {
-        List<InfrastructureBranchModel> temp = [];
+      // try {
+      List<InfrastructureBranchModel> temp = [];
 
-        response.data.forEach((item) {
-          var t = InfrastructureBranchModel.fromJson(item);
-          temp.add(t);
-        });
-        return temp;
-      } catch (error) {
-        logger.e("Error: $error");
-      }
+      response.data.forEach((item) {
+        var t = InfrastructureBranchModel.fromJson(item);
+        temp.add(t);
+      });
+      return temp;
     }
     return [];
   }

@@ -6,10 +6,10 @@ import { DynamodbModule } from 'src/dynamodb/dynamodb.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { getJWTConfig } from './jwt.config';
 
 @Module({
   imports: [
-    ConfigModule,
     DynamodbModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {

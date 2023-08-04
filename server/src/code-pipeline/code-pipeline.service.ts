@@ -6,12 +6,13 @@ import {
   UpdatePipelineCommand,
   StartPipelineExecutionCommand,
 } from '@aws-sdk/client-codepipeline';
-import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AssumeRoleService } from 'src/assume-role/assume-role.service';
+import { CloudwatchService } from 'src/cloudwatch/cloudwatch.service';
 import { DynamodbService } from 'src/dynamodb/dynamodb.service';
 @Injectable()
-export class CodePipelineService {
+export class CodePipelineService implements OnModuleInit {
   client: CodePipelineClient;
   REGION: string = '';
   AWS_ACCESS_KEY_ID: string;
@@ -22,6 +23,8 @@ export class CodePipelineService {
   constructor(
     private configService: ConfigService,
     private dynamoDBService: DynamodbService,
+    private cloudWatchService: CloudwatchService,
+    private assumeRoleService: AssumeRoleService,
   ) {
     this.REGION = this.configService.get<string>('REGION');
     this.AWS_ACCESS_KEY_ID =
@@ -33,6 +36,8 @@ export class CodePipelineService {
     this.TARGET_ACCOUNT_ID =
       this.configService.get<string>('TARGET_ACCOUNT_ID');
     this.TARGET_ROLE_NAME = this.configService.get<string>('TARGET_ROLE_NAME');
+  }
+  async onModuleInit() {
     let codePipelineConfig: CodePipelineClientConfig = {
       region: this.REGION,
     };
@@ -44,23 +49,31 @@ export class CodePipelineService {
           secretAccessKey: this.AWS_SECRET_ACCESS_KEY,
         },
       };
+      this.client = new CodePipelineClient(codePipelineConfig);
+    } else {
+      this.client = this.assumeRoleService.codePipelineClient;
     }
-    this.client = new CodePipelineClient(codePipelineConfig);
   }
   async configPipeline({ pipelineName, targetBranch, runPipeline, envName }) {
-    const updatedCurrentPipeline = await this.updatePipeline(
-      pipelineName,
-      targetBranch,
-    );
-    await this.dynamoDBService.updateDynamoDB(
-      envName,
-      targetBranch,
-      pipelineName,
-    );
-    if (runPipeline) {
-      await this.startPipeline(pipelineName);
+    try {
+      const updatedCurrentPipeline = await this.updatePipeline(
+        pipelineName,
+        targetBranch,
+      );
+      console.log('====', envName, targetBranch, pipelineName);
+
+      await this.dynamoDBService.updateDynamoDB(
+        envName,
+        targetBranch,
+        pipelineName,
+      );
+      if (runPipeline) {
+        await this.startPipeline(pipelineName);
+      }
+      return updatedCurrentPipeline;
+    } catch (error) {
+      console.log('======>', error);
     }
-    return updatedCurrentPipeline;
   }
   async getPipelineData(pipelineName: string) {
     const getPipelineInput = {
@@ -69,8 +82,8 @@ export class CodePipelineService {
     };
 
     const command = new GetPipelineCommand(getPipelineInput);
-    const codepipelineClient = await this.getCodepipelineClient();
-    const data = await codepipelineClient.send(command);
+
+    const data = await this.client.send(command);
     return data;
   }
 
@@ -79,16 +92,15 @@ export class CodePipelineService {
       maxResults: maxResults || 10,
     };
     const command = new ListPipelinesCommand(input);
-    const codepipelineClient = await this.getCodepipelineClient();
-    return await codepipelineClient.send(command);
+    return await this.client.send(command);
   }
 
   async updatePipeline(pipelineName: string, targetBranch: string) {
     const pipelineDataRsp = (await this.getPipelineData(pipelineName)) as any;
+    const currentS3Source =
+      pipelineDataRsp.pipeline.stages[0].actions[0].configuration.S3ObjectKey;
     pipelineDataRsp.pipeline.stages[0].actions[0].configuration.S3ObjectKey =
       targetBranch;
-    // pipelineDataRsp.pipeline.stages[0].actions[0].configuration.PollForSourceChanges =
-    //   true;
 
     const pipelineData = pipelineDataRsp.pipeline;
     const artifactStore = pipelineData.artifactStore;
@@ -111,8 +123,16 @@ export class CodePipelineService {
     const updatePipeline = new UpdatePipelineCommand(
       updatePipelineInput as any,
     );
-    const codepipelineClient = await this.getCodepipelineClient();
-    // return codepipelineClient.send(updatePipeline);
+
+    try {
+      this.cloudWatchService.handleTriggerEventForChangeSource(
+        currentS3Source,
+        targetBranch,
+      );
+      return this.client.send(updatePipeline);
+    } catch (error) {
+      console.log('========> ', error);
+    }
   }
 
   async startPipeline(pipelineName: string) {
@@ -122,43 +142,6 @@ export class CodePipelineService {
     };
 
     const command1 = new StartPipelineExecutionCommand(input1);
-    const codepipelineClient = await this.getCodepipelineClient();
-    return codepipelineClient.send(command1);
-  }
-
-  private async getCodepipelineClient() {
-    if (this.IS_DEV) {
-      return this.client;
-    }
-    const credentials = await this.assumeRole(
-      this.TARGET_ACCOUNT_ID,
-      this.TARGET_ROLE_NAME,
-    );
-    return new CodePipelineClient({
-      region: this.REGION,
-      credentials: {
-        accessKeyId: credentials.AccessKeyId,
-        secretAccessKey: credentials.SecretAccessKey,
-        sessionToken: credentials.SessionToken,
-      },
-    });
-  }
-
-  private async assumeRole(targetAccountId: string, targetRoleName: string) {
-    const stsClient = new STSClient({ region: this.REGION });
-    const assumeRoleParams = {
-      RoleArn: `arn:aws:iam::${targetAccountId}:role/${targetRoleName}`,
-      RoleSessionName: 'AssumedRoleSession',
-      DurationSeconds: 900,
-    };
-
-    const assumeRoleCommand = new AssumeRoleCommand(assumeRoleParams);
-    const assumeRoleResponse = await stsClient.send(assumeRoleCommand);
-
-    const { AccessKeyId, SecretAccessKey, SessionToken } =
-      assumeRoleResponse.Credentials!;
-
-    // Return the temporary credentials
-    return { AccessKeyId, SecretAccessKey, SessionToken };
+    return this.client.send(command1);
   }
 }

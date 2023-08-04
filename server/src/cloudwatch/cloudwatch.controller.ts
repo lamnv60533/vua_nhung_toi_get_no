@@ -18,9 +18,9 @@ export class CloudwatchController {
     return this.cloudwatchService.getListTargetsByRuleCommand();
   }
 
-  @Post('')
-  @Public()
-  updatePipelineTrigger() {
-    return this.cloudwatchService.test();
-  }
+  //   @Post('')
+  //   @Public()
+  //   updatePipelineTrigger() {
+  //     return this.cloudwatchService.test();
+  //   }
 }

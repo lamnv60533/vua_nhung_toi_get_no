@@ -29,8 +29,8 @@ class _LoginSuccessPageState extends State<LoginSuccessPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(APP_PAGE.splash.toTitle),
-      ),
+          // title: Text(APP_PAGE.splash.toTitle),
+          ),
       body: const Center(
         child: CircularProgressIndicator(),
       ),

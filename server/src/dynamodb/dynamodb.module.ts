@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { DynamodbService } from './dynamodb.service';
 import { DynamodbController } from './dynamodb.controller';
-import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AssumeRoleModule } from 'src/assume-role/assume-role.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [AssumeRoleModule],
   providers: [DynamodbService],
   controllers: [DynamodbController],
   exports: [DynamodbService],

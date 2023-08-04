@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -15,6 +16,7 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private reflector: Reflector,
     private configService: ConfigService,
+    private authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,6 +40,12 @@ export class AuthGuard implements CanActivate {
       });
 
       request['user'] = payload;
+      const session = await this.authService.instropectToken(
+        payload.accessToken,
+      );
+      if (!session.active) {
+        throw new UnauthorizedException();
+      }
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
     } catch (err) {

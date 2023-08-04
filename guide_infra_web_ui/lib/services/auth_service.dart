@@ -7,10 +7,13 @@ import 'package:guide_infra_web_ui/services/storage.dart';
 class AuthService {
   final StreamController<bool> _onAuthStateChange =
       StreamController.broadcast();
+  final StreamController<String> _onUsernameChange =
+      StreamController.broadcast();
   final SERVER_URL = dotenv.env['SERVER_HOST'];
   final logger = LogService().logger;
   final StorageService _storage = StorageService();
   Stream<bool> get onAuthStateChange => _onAuthStateChange.stream;
+  Stream<String> get onUsernameChange => _onUsernameChange.stream;
 
   Future<bool> login(String? state) async {
     if (state != null) {
@@ -24,11 +27,15 @@ class AuthService {
           var accessToken = response.data['data']['access_token'];
           await _storage.setAccessToken(accessToken);
           _onAuthStateChange.add(true);
+          _onUsernameChange.add("lamnv");
           return true;
         }
       } catch (e) {
-        await _storage.removeStorageValue("accessToken");
         logger.e("Error: $e");
+
+        if (e is ForbiddenException) {
+          await _storage.removeStorageValue("accessToken");
+        }
       }
     }
     _onAuthStateChange.add(false);

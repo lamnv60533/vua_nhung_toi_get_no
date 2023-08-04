@@ -89,26 +89,40 @@ class _LoginState extends State<Login> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const SizedBox(height: 200.0),
                 SizedBox(
                   width: 400,
                   child: Form(
                     key: formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 250.0),
-                        label("Email"),
-                        const SizedBox(height: 5.0),
-                        usernameField,
-                        const SizedBox(height: 20.0),
-                        label("Password"),
-                        const SizedBox(height: 5.0),
-                        passwordField,
-                        const SizedBox(height: 20.0),
-                        longButtons("Login", doLogin),
-                        const SizedBox(height: 5.0),
-                        forgotLabel
-                      ],
+                    child: Container(
+                      // padding: const EdgeInsets.all(40),
+                      // decoration: BoxDecoration(
+                      //     border: Border.all(color: Colors.blueAccent)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 20.0),
+                          label("Email"),
+                          const SizedBox(height: 5.0),
+                          usernameField,
+                          const SizedBox(height: 20.0),
+                          label("Password"),
+                          const SizedBox(height: 5.0),
+                          passwordField,
+                          const SizedBox(height: 20.0),
+                          longButtons("Login", doLogin),
+                          const SizedBox(height: 5.0),
+                          forgotLabel,
+                          const SizedBox(height: 20.0),
+                          Container(
+                            color: Colors.grey.shade100,
+                            height: 1,
+                            width: double.infinity,
+                          ),
+                          const SizedBox(height: 20.0),
+                          longButtons("Login with SSO", doLogin),
+                        ],
+                      ),
                     ),
                   ),
                 ),

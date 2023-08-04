@@ -19,13 +19,8 @@ class Api {
       options.headers['Content-Type'] = 'application/json; charset=UTF-8';
       return handler.next(options);
     }, onError: (DioException error, handler) async {
+      print('Erorr: ${error.toString()}');
       if ((error.response?.statusCode == 401)) {
-        // if (await _storage.containsKey(key: 'refreshToken')) {
-        //   if (await refreshToken()) {
-        //     return handler.resolve(await _retry(error.requestOptions));
-        //   }
-        // }
-
         _storage.removeStorageValue("accessToken");
         _onAuthStateChange.add(false);
       }
@@ -60,3 +55,5 @@ class Api {
   //   }
   // }
 }
+
+class ForbiddenException implements Exception {}

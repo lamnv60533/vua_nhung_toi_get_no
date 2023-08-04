@@ -111,7 +111,7 @@ export class AuthService {
     });
     const tempSession = await this.dynamoDBService.get(getTempSessionCommnand);
     if (tempSession) {
-      // console.log(tempSession);
+      console.log(tempSession);
     }
     let data = qs.stringify({
       grant_type: 'authorization_code',
@@ -135,11 +135,12 @@ export class AuthService {
       .request(config)
       .then(async (response) => {
         const accessToken = response.data.access_token;
-        await this.#instropectToken(accessToken, state);
+        const data = await this.instropectToken(accessToken);
+        await this.handleLogginSession(data, state, accessToken);
         const REDIRECT_URL =
           this.configService.get('REDIRECT_URL') ||
           'http://localhost:5555/splash';
-        return res.redirect(`REDIRECT_URL?state= ${state}`);
+        return res.redirect(`${REDIRECT_URL}?state=${state}`);
       })
       .catch((error) => {
         console.log(error);
@@ -171,7 +172,8 @@ export class AuthService {
     });
     const { session_state, access_token } = (resutl as any)?.data;
     if (access_token) {
-      return this.#instropectToken(access_token, session_state);
+      const data = await this.instropectToken(access_token);
+      return this.handleLogginSession(data, session_state, access_token);
     } else {
       return {
         code: 400,
@@ -180,7 +182,7 @@ export class AuthService {
     }
   }
 
-  async #instropectToken(accessToken: string, state) {
+  async instropectToken(accessToken: string) {
     let data = qs.stringify({
       token: accessToken,
     });
@@ -201,10 +203,20 @@ export class AuthService {
 
       .catch((error) => {
         console.log(error);
+        throw new Error(error);
       });
     const sessionData = (result as any).data as InfraSessions;
 
+    return sessionData;
+  }
+  async handleLogginSession(
+    sessionData: InfraSessions,
+    state: string,
+    accessToken: string,
+  ) {
     const userToken = await this.#generateJwtSession({
+      state,
+      accessToken,
       id: sessionData.email,
       roles: sessionData?.resource_access,
       realm_access: sessionData?.realm_access,
@@ -228,7 +240,6 @@ export class AuthService {
       email: sessionData.email,
     };
     await this.dynamoDBService.addItem(sessionCommand);
-
     return userSession;
   }
 
