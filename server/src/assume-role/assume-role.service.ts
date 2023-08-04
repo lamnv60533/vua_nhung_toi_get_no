@@ -1,4 +1,5 @@
 import { CodePipelineClient } from '@aws-sdk/client-codepipeline';
+import { EventBridgeClient } from '@aws-sdk/client-eventbridge';
 import {
   AssumeRoleCommand,
   AssumeRoleCommandInput,
@@ -18,6 +19,7 @@ export class AssumeRoleService {
   STS_ACCESS_KEY_ID: string;
   STS_SESSION_TOKEN: string;
   codePipelineClient: CodePipelineClient;
+  eventBridgeClient: EventBridgeClient;
   private readonly logger = new Logger(AssumeRoleService.name);
 
   constructor(private configService: ConfigService) {
@@ -54,11 +56,22 @@ export class AssumeRoleService {
     if (!this.IS_DEV) {
       await this.assumeRole();
       this.getCodepipelineClient();
+      this.getEventBridgeClient();
     }
   }
 
   private async getCodepipelineClient() {
     this.codePipelineClient = new CodePipelineClient({
+      region: this.REGION,
+      credentials: {
+        accessKeyId: this.STS_ACCESS_KEY_ID,
+        secretAccessKey: this.STS_SECRET_ACCESS_KEY,
+        sessionToken: this.STS_SESSION_TOKEN,
+      },
+    });
+  }
+  private async getEventBridgeClient() {
+    this.eventBridgeClient = new EventBridgeClient({
       region: this.REGION,
       credentials: {
         accessKeyId: this.STS_ACCESS_KEY_ID,

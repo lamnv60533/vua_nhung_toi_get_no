@@ -9,6 +9,7 @@ import {
   ListTargetsByRuleCommand,
   PutRuleCommand,
 } from '@aws-sdk/client-eventbridge';
+import { AssumeRoleService } from 'src/assume-role/assume-role.service';
 
 @Injectable()
 export class CloudwatchService {
@@ -19,7 +20,10 @@ export class CloudwatchService {
   IS_DEV: any;
   TARGET_ACCOUNT_ID: any;
   TARGET_ROLE_NAME: any;
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private assumeRoleService: AssumeRoleService,
+  ) {
     this.REGION = this.configService.get<string>('REGION');
     this.AWS_ACCESS_KEY_ID =
       this.configService.get<string>('AWS_ACCESS_KEY_ID');
@@ -31,10 +35,14 @@ export class CloudwatchService {
       this.configService.get<string>('TARGET_ACCOUNT_ID');
     this.TARGET_ROLE_NAME = this.configService.get<string>('TARGET_ROLE_NAME');
 
-    let eventBridgeClientConfig: EventBridgeClientConfig = {
-      region: this.REGION,
-    };
-    this.eventClient = new EventBridgeClient(eventBridgeClientConfig);
+    if (this.IS_DEV) {
+      let eventBridgeClientConfig: EventBridgeClientConfig = {
+        region: this.REGION,
+      };
+      this.eventClient = new EventBridgeClient(eventBridgeClientConfig);
+    } else {
+      this.eventClient = this.assumeRoleService.eventBridgeClient;
+    }
   }
 
   async handleTriggerEventForChangeSource(
