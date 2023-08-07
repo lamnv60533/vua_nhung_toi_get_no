@@ -77,7 +77,7 @@ class _LoginState extends State<Login> {
       // }
       final SERVER_URL = dotenv.env['SERVER_HOST'];
       js.context.callMethod(
-          'open', [ SERVER_URL + '/api/v1/oauth/login', '_self']);
+          'open', [ SERVER_URL + '/oauth/login', '_self']);
     }
 
     return SafeArea(
