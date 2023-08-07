@@ -7,6 +7,7 @@ class User {
   String? accessToken;
   Object? realmAccess;
   Object? resourceAccess;
+  List<String>? roles;
 
   User(
       {this.userId,
@@ -16,7 +17,8 @@ class User {
       this.type,
       this.accessToken,
       this.realmAccess,
-      this.resourceAccess});
+      this.resourceAccess,
+      this.roles});
 
   factory User.fromJson(Map<String, dynamic> responseData) {
     return User(
@@ -25,6 +27,7 @@ class User {
         email: responseData['email'],
         accessToken: responseData['access_token'],
         realmAccess: responseData['realm_access'],
-        resourceAccess: responseData['realm_access']);
+        resourceAccess: responseData['realm_access'],
+        roles: responseData["roles"]);
   }
 }

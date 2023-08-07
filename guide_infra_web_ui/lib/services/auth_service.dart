@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:guide_infra_web_ui/models/user.dto.dart';
 import 'package:guide_infra_web_ui/services/api.dart';
 import 'package:guide_infra_web_ui/services/logger.dart';
 import 'package:guide_infra_web_ui/services/storage.dart';
@@ -7,13 +8,12 @@ import 'package:guide_infra_web_ui/services/storage.dart';
 class AuthService {
   final StreamController<bool> _onAuthStateChange =
       StreamController.broadcast();
-  final StreamController<String> _onUsernameChange =
-      StreamController.broadcast();
+  final StreamController<User> _onUserInfoChange = StreamController.broadcast();
   final SERVER_URL = dotenv.env['SERVER_HOST'];
   final logger = LogService().logger;
   final StorageService _storage = StorageService();
   Stream<bool> get onAuthStateChange => _onAuthStateChange.stream;
-  Stream<String> get onUsernameChange => _onUsernameChange.stream;
+  Stream<User> get onUserInfoChange => _onUserInfoChange.stream;
 
   Future<bool> login(String? state) async {
     if (state != null) {
@@ -27,7 +27,12 @@ class AuthService {
           var accessToken = response.data['data']['access_token'];
           await _storage.setAccessToken(accessToken);
           _onAuthStateChange.add(true);
-          _onUsernameChange.add("lamnv");
+          final user = User(username: "liam", roles: [
+            "guide-infra-admin",
+            "guide-infra-user",
+            "uma_protection"
+          ]);
+          _onUserInfoChange.add(user);
           return true;
         }
       } catch (e) {

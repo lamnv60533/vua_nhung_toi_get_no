@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:guide_infra_web_ui/models/user.dto.dart';
 import 'package:guide_infra_web_ui/route/app_router.dart';
 import 'package:guide_infra_web_ui/services/app_service.dart';
 import 'package:guide_infra_web_ui/services/auth_service.dart';
+import 'package:guide_infra_web_ui/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'constants.dart';
@@ -38,19 +40,27 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late AppService appService;
+  late UserService userService;
   late AuthService authService;
   late StreamSubscription<bool> authSubscription;
+  late StreamSubscription<User> userInfoSubscription;
 
   @override
   void initState() {
     appService = AppService(widget.sharedPreferences);
     authService = AuthService();
     authSubscription = authService.onAuthStateChange.listen(onAuthStateChange);
+    userInfoSubscription =
+        authService.onUserInfoChange.listen(onAuthUserInfoChange);
     super.initState();
   }
 
   void onAuthStateChange(bool login) {
     appService.loginState = login;
+  }
+
+  void onAuthUserInfoChange(User user) {
+    userService.setUserInfo(user.username ?? "", user.roles ?? []);
   }
 
   @override
@@ -69,6 +79,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(
           create: (context) => MenuAppController(),
         ),
+        ChangeNotifierProvider<UserService>(create: (_) => userService),
       ],
       child: Builder(
         builder: (context) {

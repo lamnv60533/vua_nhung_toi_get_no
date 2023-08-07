@@ -3,6 +3,8 @@ import 'package:guide_infra_web_ui/constants.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:guide_infra_web_ui/services/user_service.dart';
+import 'package:provider/provider.dart';
 
 import '../../../models/infra_ui.dto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -188,17 +190,19 @@ class _InfraModelRowState extends State<InfraModelRow> {
                               ),
                               DataCell(
                                 GFButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        showalert = true;
-                                        message = "change and release";
-                                        release = true;
-                                        pipelineName = env.PipelineName;
-                                        targetBranch =
-                                            selectOptions[index].name;
-                                        envName = env.EnvName;
-                                      });
-                                    },
+                                    onPressed: isEnableReleaseButton(context)
+                                        ? () {
+                                            setState(() {
+                                              showalert = true;
+                                              message = "change and release";
+                                              release = true;
+                                              pipelineName = env.PipelineName;
+                                              targetBranch =
+                                                  selectOptions[index].name;
+                                              envName = env.EnvName;
+                                            });
+                                          }
+                                        : null,
                                     child: const Text("Release")),
                               ),
                             ],
@@ -261,5 +265,11 @@ class _InfraModelRowState extends State<InfraModelRow> {
   @override
   void didUpdateWidget(covariant InfraModelRow oldWidget) {
     super.didUpdateWidget(oldWidget);
+  }
+
+  bool isEnableReleaseButton(BuildContext context) {
+    final roles = context.watch<UserService>().roles.toList();
+    if (roles.contains("guide-infra-admin")) return true;
+    return false;
   }
 }
