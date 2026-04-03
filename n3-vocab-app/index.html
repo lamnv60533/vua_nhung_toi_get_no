@@ -62,8 +62,10 @@
       <div class="typing-card">
         <div class="typing-kanji" id="typing-kanji"></div>
         <div class="typing-meaning" id="typing-meaning"></div>
+        <div id="typing-hint" class="hidden"></div>
         <div class="typing-input-area">
           <input type="text" id="typing-input" placeholder="Type hiragana reading..." autocomplete="off" spellcheck="false">
+          <button id="btn-typing-hint" class="hint-btn">Hint</button>
           <button id="btn-typing-check" class="primary-btn">Check</button>
         </div>
         <div id="typing-feedback" class="hidden"></div>
@@ -89,6 +91,10 @@
         <div class="typing-score-item streak-score">
           <span class="score-label">Streak</span>
           <span id="typing-streak">0</span>
+        </div>
+        <div class="typing-score-item hint-score">
+          <span class="score-label">Hints</span>
+          <span id="typing-hint-count">0</span>
         </div>
         <button id="btn-typing-reset" class="action-btn shuffle">Reset</button>
       </div>

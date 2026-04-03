@@ -647,6 +647,38 @@ nav {
   margin-bottom: 28px;
 }
 
+#typing-hint {
+  font-size: 1.4rem;
+  color: #fbbf24;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  background: #2a2a1a;
+  border: 1px solid #fbbf2444;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.hint-btn {
+  padding: 12px 18px;
+  background: #2a2a1a;
+  color: #fbbf24;
+  border: 1px solid #fbbf2444;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.hint-btn:hover {
+  background: #3a3a1a;
+  border-color: #fbbf24;
+}
+
+.hint-btn.used {
+  display: none;
+}
+
 .typing-input-area {
   display: flex;
   gap: 10px;
@@ -771,6 +803,12 @@ nav {
 
 .streak-score span:last-child {
   color: #fbbf24;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.hint-score span:last-child {
+  color: #f97316;
   font-weight: bold;
   font-size: 1.2rem;
 }

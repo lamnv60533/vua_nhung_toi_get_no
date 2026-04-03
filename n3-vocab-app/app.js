@@ -6,7 +6,7 @@ let allVocab = [...N3_VOCAB, ...importedWords];
 let filteredVocab = [...allVocab];
 let progress = loadProgress();
 let quizState = null;
-let typingState = { index: 0, correctCount: 0, wrongCount: 0, streak: 0, answered: false };
+let typingState = { index: 0, correctCount: 0, wrongCount: 0, streak: 0, hintCount: 0, answered: false, hintUsed: false };
 
 // DOM Elements
 const flashcard = document.getElementById('flashcard');
@@ -369,6 +369,26 @@ function setupTyping() {
     input.value = imeGetDisplay();
   });
 
+  document.getElementById('btn-typing-hint').addEventListener('click', () => {
+    if (typingState.answered || typingState.hintUsed) return;
+    if (filteredVocab.length === 0) return;
+
+    const word = filteredVocab[typingState.index];
+    typingState.hintUsed = true;
+    typingState.hintCount++;
+    typingState.streak = 0;
+
+    // Show hint and hide button
+    const hintEl = document.getElementById('typing-hint');
+    hintEl.textContent = word.reading;
+    hintEl.classList.remove('hidden');
+    document.getElementById('btn-typing-hint').classList.add('used');
+    document.getElementById('typing-hint-count').textContent = typingState.hintCount;
+
+    // Re-focus input
+    document.getElementById('typing-input').focus();
+  });
+
   document.getElementById('btn-typing-skip').addEventListener('click', () => {
     if (!typingState.answered) {
       typingState.wrongCount++;
@@ -380,7 +400,7 @@ function setupTyping() {
   document.getElementById('btn-typing-next').addEventListener('click', typingNext);
 
   document.getElementById('btn-typing-reset').addEventListener('click', () => {
-    typingState = { index: 0, correctCount: 0, wrongCount: 0, streak: 0, answered: false };
+    typingState = { index: 0, correctCount: 0, wrongCount: 0, streak: 0, hintCount: 0, answered: false, hintUsed: false };
     shuffleArray(filteredVocab);
     renderTypingCard();
   });
@@ -403,11 +423,15 @@ function renderTypingCard() {
 
   document.getElementById('typing-feedback').classList.add('hidden');
   document.getElementById('typing-answer-reveal').classList.add('hidden');
+  document.getElementById('typing-hint').classList.add('hidden');
+  document.getElementById('btn-typing-hint').classList.remove('used');
+  typingState.hintUsed = false;
   document.getElementById('typing-counter').textContent = `${typingState.index + 1} / ${filteredVocab.length}`;
 
   document.getElementById('typing-correct-count').textContent = typingState.correctCount;
   document.getElementById('typing-wrong-count').textContent = typingState.wrongCount;
   document.getElementById('typing-streak').textContent = typingState.streak;
+  document.getElementById('typing-hint-count').textContent = typingState.hintCount;
 
   typingState.answered = false;
 }
