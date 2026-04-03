@@ -358,6 +358,16 @@ function setupTyping() {
     }
   });
 
+  // Global Enter listener for when input is not focused (after correct answer)
+  document.addEventListener('keydown', (e) => {
+    if (currentMode !== 'typing') return;
+    if (e.target.tagName === 'TEXTAREA' || (e.target.tagName === 'INPUT' && e.target.id !== 'typing-input')) return;
+    if (typingState.answered && e.key === 'Enter') {
+      e.preventDefault();
+      typingNext();
+    }
+  });
+
   // Prevent direct paste/input that bypasses our IME
   input.addEventListener('paste', (e) => {
     e.preventDefault();
