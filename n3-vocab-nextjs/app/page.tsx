@@ -4,8 +4,14 @@ export default function Home() {
   return (
     <>
       <div id="app">
+        <div id="project-bar">
+          <select id="project-select"></select>
+          <button id="btn-new-project" className="project-btn" title="New Project">+</button>
+          <button id="btn-delete-project" className="project-btn delete" title="Delete Project">×</button>
+        </div>
+
         <header>
-          <h1>N3 Vocabulary</h1>
+          <h1 id="app-title">N3 Vocabulary</h1>
           <nav>
             <button className="nav-btn active" data-mode="flashcard">Flashcards</button>
             <button className="nav-btn" data-mode="typing">Typing</button>
@@ -174,6 +180,20 @@ export default function Home() {
         </section>
 
         <section id="import-mode" className="mode">
+          <div className="import-section">
+            <h2>Import JSON Array</h2>
+            <p className="import-desc">Paste a JSON array of flashcards. Each object needs <code>kanji</code>, <code>reading</code>, <code>meaning</code> fields. Optional: <code>example</code>, <code>category</code>.</p>
+            <textarea id="import-json-textarea" rows={8} placeholder={'[\n  { "kanji": "経験", "reading": "けいけん", "meaning": "experience" },\n  { "kanji": "習慣", "reading": "しゅうかん", "meaning": "habit" }\n]'}></textarea>
+            <div className="import-settings">
+              <div className="import-option">
+                <label>Default category:</label>
+                <input type="text" id="import-json-category" placeholder="imported" defaultValue="imported" />
+              </div>
+            </div>
+            <button id="btn-import-json" className="primary-btn">Import JSON</button>
+            <div id="import-json-result" className="hidden"></div>
+          </div>
+
           <div className="import-section">
             <h2>Import from Quizlet</h2>
             <p className="import-desc">Paste a Quizlet URL to auto-import, or paste exported text directly.</p>
