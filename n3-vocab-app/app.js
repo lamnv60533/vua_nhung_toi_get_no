@@ -454,32 +454,40 @@ function checkTypingAnswer() {
 
   if (!userAnswer) return;
 
-  typingState.answered = true;
-  input.disabled = true;
-
   const feedback = document.getElementById('typing-feedback');
   const reveal = document.getElementById('typing-answer-reveal');
   feedback.classList.remove('hidden', 'correct', 'wrong');
-  reveal.classList.remove('hidden');
-
-  reveal.querySelector('.typing-correct-answer').textContent = word.reading;
-  reveal.querySelector('.typing-example').textContent = word.example;
 
   if (userAnswer === correctAnswer) {
+    // Correct — lock input, show answer, Enter to advance
+    typingState.answered = true;
+    input.disabled = true;
+    reveal.classList.remove('hidden');
+    reveal.querySelector('.typing-correct-answer').textContent = word.reading;
+    reveal.querySelector('.typing-example').textContent = word.example;
     feedback.classList.add('correct');
-    feedback.textContent = 'Correct!';
-    input.classList.add('correct-input');
-    input.classList.add('pop');
+    feedback.textContent = 'Correct! Press Enter for next word.';
+    input.classList.remove('wrong-input', 'shake');
+    input.classList.add('correct-input', 'pop');
     typingState.correctCount++;
     typingState.streak++;
     setKnown(word, true);
   } else {
+    // Wrong — show feedback but allow retype
     feedback.classList.add('wrong');
-    feedback.textContent = `Wrong! You typed: ${userAnswer}`;
-    input.classList.add('wrong-input');
-    input.classList.add('shake');
+    feedback.textContent = `Wrong! Try again. (You typed: ${userAnswer})`;
+    input.classList.remove('correct-input', 'pop');
+    input.classList.add('wrong-input', 'shake');
     typingState.wrongCount++;
     typingState.streak = 0;
+
+    // Clear input and reset IME for retry
+    setTimeout(() => {
+      input.classList.remove('shake');
+      imeReset();
+      input.value = '';
+      input.focus();
+    }, 500);
   }
 
   document.getElementById('typing-correct-count').textContent = typingState.correctCount;
