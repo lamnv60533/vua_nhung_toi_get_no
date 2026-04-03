@@ -2,19 +2,87 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: #0f0f23;
   color: #e0e0e0;
   min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Prevent zoom on input focus (iOS) */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Safe area for notched phones */
+#app {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 #app {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* Project Bar */
+#project-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+#project-select {
+  flex: 1;
+  padding: 8px 12px;
+  background: #16213e;
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.project-btn {
+  width: 36px;
+  height: 36px;
+  background: #16213e;
+  color: #6e8efb;
+  border: 1px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.project-btn:hover {
+  border-color: #6e8efb;
+  background: #1a1a3e;
+}
+
+.project-btn.delete {
+  color: #ff6b6b;
+}
+
+.project-btn.delete:hover {
+  border-color: #ff6b6b;
+  background: #2a1a1a;
 }
 
 /* Header */
@@ -1052,35 +1120,310 @@ nav {
 /* Responsive */
 @media (max-width: 600px) {
   #app {
-    padding: 12px;
+    padding: 10px;
   }
 
   header h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+  }
+
+  nav {
+    gap: 6px;
   }
 
   .nav-btn {
-    padding: 6px 14px;
-    font-size: 0.8rem;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Project bar */
+  #project-bar {
+    padding: 8px 10px;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  #project-select {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+
+  .project-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  /* Category filter */
+  #category-filter {
+    padding: 8px 12px;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  #category-select {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+
+  /* Flashcard */
+  .flashcard-container {
+    margin: 12px auto;
+  }
+
+  .flashcard {
+    min-height: 220px;
+  }
+
+  .flashcard-front,
+  .flashcard-back {
+    min-height: 220px;
+    padding: 24px 20px;
   }
 
   .flashcard-front .kanji {
     font-size: 2.5rem;
   }
 
+  .flashcard-front .reading {
+    font-size: 1.1rem;
+  }
+
+  .flashcard-back .meaning {
+    font-size: 1.3rem;
+  }
+
+  .flashcard-controls {
+    gap: 16px;
+    margin: 12px 0;
+  }
+
+  .control-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .flashcard-actions {
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  /* Typing */
+  .typing-card {
+    padding: 24px 16px;
+    margin: 12px auto;
+  }
+
+  .typing-kanji {
+    font-size: 3rem;
+  }
+
+  .typing-meaning {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  .typing-input-area {
+    flex-wrap: nowrap;
+  }
+
+  #typing-input {
+    font-size: 1.1rem;
+    padding: 12px 14px;
+    max-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hint-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .primary-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    margin-top: 0;
+  }
+
+  #typing-hint {
+    font-size: 1.2rem;
+    padding: 8px 14px;
+  }
+
+  #typing-feedback {
+    font-size: 0.95rem;
+    margin-top: 14px;
+  }
+
+  #typing-answer-reveal .typing-correct-answer {
+    font-size: 1.2rem;
+  }
+
+  .typing-controls {
+    gap: 16px;
+    margin: 14px 0;
+  }
+
+  .typing-score-bar {
+    gap: 12px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  .score-label {
+    font-size: 0.75rem;
+  }
+
+  .correct-score span:last-child,
+  .wrong-score span:last-child,
+  .streak-score span:last-child,
+  .hint-score span:last-child {
+    font-size: 1rem;
+  }
+
+  /* Quiz */
+  #quiz-setup {
+    padding: 24px 12px;
+  }
+
+  .quiz-option {
+    flex-direction: column;
+    gap: 6px;
+  }
+
   #quiz-question {
     font-size: 1.6rem;
+    margin-bottom: 20px;
+    min-height: 60px;
   }
 
   #quiz-choices {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
+  .quiz-choice {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+
+  #quiz-score {
+    font-size: 2.2rem;
+  }
+
+  .review-item {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Word List */
+  .list-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .word-item {
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .word-item .word-ja {
+    font-size: 1.1rem;
+    min-width: 80px;
+  }
+
+  .word-item .word-en {
+    font-size: 0.85rem;
+  }
+
+  /* Stats */
   .stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 16px;
   }
 
   .stat-number {
     font-size: 1.8rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .cat-stat {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .cat-stat-name {
+    min-width: 90px;
+    font-size: 0.8rem;
+  }
+
+  /* Import */
+  .import-section {
+    padding: 18px 14px;
+  }
+
+  .import-url-row {
+    flex-direction: column;
+  }
+
+  .import-url-row .primary-btn {
+    width: 100%;
+  }
+
+  .import-settings {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .import-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .import-option select,
+  .import-option input {
+    width: 100%;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 380px) {
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  .nav-btn {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+
+  .typing-kanji {
+    font-size: 2.5rem;
+  }
+
+  .flashcard-front .kanji {
+    font-size: 2rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
