@@ -1,7 +1,9 @@
 // State
 let currentMode = 'flashcard';
 let currentIndex = 0;
-let filteredVocab = [...N3_VOCAB];
+let importedWords = loadImportedWords();
+let allVocab = [...N3_VOCAB, ...importedWords];
+let filteredVocab = [...allVocab];
 let progress = loadProgress();
 let quizState = null;
 let typingState = { index: 0, correctCount: 0, wrongCount: 0, streak: 0, answered: false };
@@ -25,6 +27,7 @@ function init() {
   setupQuiz();
   setupWordList();
   setupStats();
+  setupImport();
   applyFilter();
   renderFlashcard();
 }
@@ -62,13 +65,7 @@ function setKnown(word, known) {
 
 // ---- Categories ----
 function setupCategories() {
-  const categories = [...new Set(N3_VOCAB.map(w => w.category))];
-  categories.forEach(cat => {
-    const opt = document.createElement('option');
-    opt.value = cat;
-    opt.textContent = formatCategory(cat);
-    categorySelect.appendChild(opt);
-  });
+  refreshCategoryOptions();
   categorySelect.addEventListener('change', () => {
     applyFilter();
     currentIndex = 0;
@@ -79,13 +76,26 @@ function setupCategories() {
   });
 }
 
+function refreshCategoryOptions() {
+  const current = categorySelect.value;
+  categorySelect.innerHTML = '<option value="all">All</option>';
+  const categories = [...new Set(allVocab.map(w => w.category))];
+  categories.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = formatCategory(cat);
+    categorySelect.appendChild(opt);
+  });
+  categorySelect.value = current || 'all';
+}
+
 function formatCategory(cat) {
   return cat.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function applyFilter() {
   const cat = categorySelect.value;
-  filteredVocab = cat === 'all' ? [...N3_VOCAB] : N3_VOCAB.filter(w => w.category === cat);
+  filteredVocab = cat === 'all' ? [...allVocab] : allVocab.filter(w => w.category === cat);
   wordCount.textContent = `${filteredVocab.length} words`;
 }
 
@@ -565,7 +575,7 @@ function renderWordList() {
     `;
     div.querySelector('.word-status').addEventListener('click', (e) => {
       const key = e.target.dataset.key;
-      const w = N3_VOCAB.find(v => getWordKey(v) === key);
+      const w = allVocab.find(v => getWordKey(v) === key);
       if (w) {
         setKnown(w, !isKnown(w));
         renderWordList();
@@ -589,8 +599,8 @@ function setupStats() {
 }
 
 function renderStats() {
-  const total = N3_VOCAB.length;
-  const known = N3_VOCAB.filter(w => isKnown(w)).length;
+  const total = allVocab.length;
+  const known = allVocab.filter(w => isKnown(w)).length;
   const learning = total - known;
   const percent = total > 0 ? Math.round((known / total) * 100) : 0;
 
@@ -601,12 +611,12 @@ function renderStats() {
   document.getElementById('progress-fill').style.width = percent + '%';
 
   // Category breakdown
-  const categories = [...new Set(N3_VOCAB.map(w => w.category))];
+  const categories = [...new Set(allVocab.map(w => w.category))];
   const catStatsEl = document.getElementById('category-stats');
   catStatsEl.innerHTML = '';
 
   categories.forEach(cat => {
-    const catWords = N3_VOCAB.filter(w => w.category === cat);
+    const catWords = allVocab.filter(w => w.category === cat);
     const catKnown = catWords.filter(w => isKnown(w)).length;
     const catPercent = catWords.length > 0 ? Math.round((catKnown / catWords.length) * 100) : 0;
 
@@ -618,6 +628,267 @@ function renderStats() {
       <span class="cat-stat-text">${catKnown}/${catWords.length}</span>
     `;
     catStatsEl.appendChild(div);
+  });
+}
+
+// ---- Import ----
+function loadImportedWords() {
+  try {
+    return JSON.parse(localStorage.getItem('n3-imported')) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveImportedWords() {
+  localStorage.setItem('n3-imported', JSON.stringify(importedWords));
+}
+
+function rebuildVocab() {
+  allVocab = [...N3_VOCAB, ...importedWords];
+  refreshCategoryOptions();
+  applyFilter();
+  currentIndex = 0;
+  renderFlashcard();
+}
+
+function setupImport() {
+  document.getElementById('btn-import-url').addEventListener('click', fetchQuizlet);
+  document.getElementById('btn-import-paste').addEventListener('click', importFromPaste);
+  document.getElementById('btn-clear-imports').addEventListener('click', () => {
+    if (confirm('Remove all imported words?')) {
+      importedWords = [];
+      saveImportedWords();
+      rebuildVocab();
+      renderImportedSets();
+    }
+  });
+  renderImportedSets();
+}
+
+async function fetchQuizlet() {
+  const url = document.getElementById('import-url').value.trim();
+  const statusEl = document.getElementById('import-url-status');
+
+  if (!url) return;
+
+  // Extract set ID from URL
+  const match = url.match(/quizlet\.com\/(\d+)/);
+  if (!match) {
+    statusEl.className = 'error';
+    statusEl.textContent = 'Invalid Quizlet URL. Expected format: https://quizlet.com/123456/...';
+    statusEl.classList.remove('hidden');
+    return;
+  }
+
+  const setId = match[1];
+  statusEl.className = 'loading';
+  statusEl.textContent = 'Fetching from Quizlet...';
+  statusEl.classList.remove('hidden');
+
+  // Try multiple CORS proxies
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent('https://quizlet.com/' + setId)}`,
+    `https://corsproxy.io/?${encodeURIComponent('https://quizlet.com/' + setId)}`,
+  ];
+
+  let html = null;
+  for (const proxyUrl of proxies) {
+    try {
+      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+      if (resp.ok) {
+        html = await resp.text();
+        break;
+      }
+    } catch {}
+  }
+
+  if (!html) {
+    statusEl.className = 'error';
+    statusEl.innerHTML = `Could not fetch from Quizlet (blocked by CORS).<br><br>
+      <strong>Manual workaround:</strong><br>
+      1. Open the Quizlet link in your browser<br>
+      2. Click <strong>... &rarr; Export</strong><br>
+      3. Copy the text and paste it below`;
+    statusEl.classList.remove('hidden');
+    return;
+  }
+
+  // Parse flashcard data from HTML
+  const words = parseQuizletHtml(html);
+
+  if (words.length === 0) {
+    statusEl.className = 'error';
+    statusEl.textContent = 'Could not parse flashcards from the page. Try the paste method instead.';
+    statusEl.classList.remove('hidden');
+    return;
+  }
+
+  const category = document.getElementById('import-category').value.trim() || 'quizlet-import';
+  words.forEach(w => w.category = category);
+  addImportedWords(words, category);
+
+  statusEl.className = 'success';
+  statusEl.textContent = `Successfully imported ${words.length} words as "${category}"!`;
+  statusEl.classList.remove('hidden');
+}
+
+function parseQuizletHtml(html) {
+  const words = [];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  // Try JSON-LD data
+  const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+  for (const script of scripts) {
+    try {
+      const data = JSON.parse(script.textContent);
+      if (data && data.hasPart) {
+        data.hasPart.forEach(part => {
+          if (part.name && part.acceptedAnswer && part.acceptedAnswer.text) {
+            words.push({
+              kanji: part.name,
+              reading: '',
+              meaning: part.acceptedAnswer.text,
+              example: '',
+            });
+          }
+        });
+      }
+    } catch {}
+  }
+
+  if (words.length > 0) return words;
+
+  // Try parsing from span elements with specific classes
+  const rows = doc.querySelectorAll('.SetPageTerms-term, .TermText');
+  // Fallback: try to find paired elements
+  const termEls = doc.querySelectorAll('[class*="wordText"], [class*="TermText"]');
+  const defEls = doc.querySelectorAll('[class*="definitionText"], [class*="TermText"]');
+
+  // Try regex on raw HTML for window.__NEXT_DATA__ or similar
+  const nextDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (nextDataMatch) {
+    try {
+      const nextData = JSON.parse(nextDataMatch[1]);
+      const studiableItems = findInObject(nextData, 'studiableItem') ||
+                             findInObject(nextData, 'termIdToTermsMap') ||
+                             findInObject(nextData, 'terms');
+      if (Array.isArray(studiableItems)) {
+        studiableItems.forEach(item => {
+          const word = item.word || item.front || item.term || '';
+          const def = item.definition || item.back || '';
+          if (word && def) {
+            words.push({ kanji: word, reading: '', meaning: def, example: '' });
+          }
+        });
+      }
+    } catch {}
+  }
+
+  return words;
+}
+
+function findInObject(obj, key) {
+  if (!obj || typeof obj !== 'object') return null;
+  if (obj[key]) return obj[key];
+  for (const k of Object.keys(obj)) {
+    const result = findInObject(obj[k], key);
+    if (result) return result;
+  }
+  return null;
+}
+
+function importFromPaste() {
+  const text = document.getElementById('import-textarea').value.trim();
+  const resultEl = document.getElementById('import-result');
+
+  if (!text) {
+    resultEl.className = 'error';
+    resultEl.textContent = 'Please paste some text first.';
+    resultEl.classList.remove('hidden');
+    return;
+  }
+
+  const sepValue = document.getElementById('import-separator').value;
+  const separator = sepValue === 'tab' ? '\t' : sepValue === 'comma' ? ',' : ' - ';
+  const category = document.getElementById('import-category').value.trim() || 'quizlet-import';
+
+  const lines = text.split('\n').filter(l => l.trim());
+  const words = [];
+
+  lines.forEach(line => {
+    const parts = line.split(separator);
+    if (parts.length >= 2) {
+      const term = parts[0].trim();
+      const definition = parts.slice(1).join(separator).trim();
+      if (term && definition) {
+        words.push({
+          kanji: term,
+          reading: '',
+          meaning: definition,
+          example: '',
+          category: category,
+        });
+      }
+    }
+  });
+
+  if (words.length === 0) {
+    resultEl.className = 'error';
+    resultEl.textContent = 'Could not parse any words. Check separator setting and format.';
+    resultEl.classList.remove('hidden');
+    return;
+  }
+
+  addImportedWords(words, category);
+
+  resultEl.className = 'success';
+  resultEl.textContent = `Imported ${words.length} words as "${category}"!`;
+  resultEl.classList.remove('hidden');
+  document.getElementById('import-textarea').value = '';
+}
+
+function addImportedWords(words, category) {
+  // Remove existing words with same category to avoid duplicates on re-import
+  importedWords = importedWords.filter(w => w.category !== category);
+  importedWords.push(...words);
+  saveImportedWords();
+  rebuildVocab();
+  renderImportedSets();
+}
+
+function renderImportedSets() {
+  const listEl = document.getElementById('imported-sets-list');
+  const clearBtn = document.getElementById('btn-clear-imports');
+  listEl.innerHTML = '';
+
+  const categories = [...new Set(importedWords.map(w => w.category))];
+
+  if (categories.length === 0) {
+    listEl.innerHTML = '<p style="color:#555;font-size:0.9rem;">No imported sets yet.</p>';
+    clearBtn.classList.add('hidden');
+    return;
+  }
+
+  clearBtn.classList.remove('hidden');
+
+  categories.forEach(cat => {
+    const count = importedWords.filter(w => w.category === cat).length;
+    const div = document.createElement('div');
+    div.className = 'imported-set-item';
+    div.innerHTML = `
+      <span class="imported-set-name">${formatCategory(cat)}</span>
+      <span class="imported-set-count">${count} words</span>
+      <button class="imported-set-delete" data-cat="${cat}">Delete</button>
+    `;
+    div.querySelector('.imported-set-delete').addEventListener('click', () => {
+      importedWords = importedWords.filter(w => w.category !== cat);
+      saveImportedWords();
+      rebuildVocab();
+      renderImportedSets();
+    });
+    listEl.appendChild(div);
   });
 }
 

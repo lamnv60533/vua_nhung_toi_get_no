@@ -17,6 +17,7 @@
         <button class="nav-btn" data-mode="quiz">Quiz</button>
         <button class="nav-btn" data-mode="list">Word List</button>
         <button class="nav-btn" data-mode="stats">Stats</button>
+        <button class="nav-btn" data-mode="import">Import</button>
       </nav>
     </header>
 
@@ -177,6 +178,55 @@
       <div id="category-stats"></div>
     </section>
   </div>
+
+    <!-- Import Mode -->
+    <section id="import-mode" class="mode">
+      <div class="import-section">
+        <h2>Import from Quizlet</h2>
+        <p class="import-desc">Paste a Quizlet URL to try auto-import, or paste exported text directly.</p>
+
+        <div class="import-method">
+          <h3>Option 1: Quizlet URL</h3>
+          <div class="import-url-row">
+            <input type="text" id="import-url" placeholder="https://quizlet.com/752353557/flashcards">
+            <button id="btn-import-url" class="primary-btn">Fetch</button>
+          </div>
+          <div id="import-url-status" class="hidden"></div>
+        </div>
+
+        <div class="import-divider"><span>or</span></div>
+
+        <div class="import-method">
+          <h3>Option 2: Paste Quizlet Export</h3>
+          <p class="import-hint">In Quizlet: click <strong>...</strong> &rarr; <strong>Export</strong> &rarr; copy all text &rarr; paste below</p>
+          <textarea id="import-textarea" rows="10" placeholder="term1&#9;definition1&#10;term2&#9;definition2&#10;..."></textarea>
+        </div>
+
+        <div class="import-settings">
+          <div class="import-option">
+            <label>Separator between term &amp; definition:</label>
+            <select id="import-separator">
+              <option value="tab">Tab (Quizlet default)</option>
+              <option value="comma">Comma</option>
+              <option value="dash"> - (dash)</option>
+            </select>
+          </div>
+          <div class="import-option">
+            <label>Save as category:</label>
+            <input type="text" id="import-category" placeholder="quizlet-import" value="quizlet-import">
+          </div>
+        </div>
+
+        <button id="btn-import-paste" class="primary-btn">Import Words</button>
+        <div id="import-result" class="hidden"></div>
+      </div>
+
+      <div class="import-section" id="imported-sets-section">
+        <h3>Imported Sets</h3>
+        <div id="imported-sets-list"></div>
+        <button id="btn-clear-imports" class="action-btn unknown hidden">Clear All Imported Words</button>
+      </div>
+    </section>
 
   <script src="vocab-data.js"></script>
   <script src="app.js"></script>
