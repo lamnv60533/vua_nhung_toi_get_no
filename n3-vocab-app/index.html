@@ -62,12 +62,12 @@
       <div class="typing-card">
         <div class="typing-kanji" id="typing-kanji"></div>
         <div class="typing-meaning" id="typing-meaning"></div>
-        <div id="typing-hint" class="hidden"></div>
         <div class="typing-input-area">
           <input type="text" id="typing-input" placeholder="Type hiragana reading..." autocomplete="off" spellcheck="false">
-          <button id="btn-typing-hint" class="hint-btn">Hint</button>
+          <button id="btn-typing-hint" class="hint-btn" title="Show reading">?</button>
           <button id="btn-typing-check" class="primary-btn">Check</button>
         </div>
+        <div id="typing-hint" style="display:none;"></div>
         <div id="typing-feedback" class="hidden"></div>
         <div id="typing-answer-reveal" class="hidden">
           <span class="typing-correct-answer"></span>

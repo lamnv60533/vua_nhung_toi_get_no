@@ -381,7 +381,7 @@ function setupTyping() {
     // Show hint and hide button
     const hintEl = document.getElementById('typing-hint');
     hintEl.textContent = word.reading;
-    hintEl.classList.remove('hidden');
+    hintEl.style.display = 'block';
     document.getElementById('btn-typing-hint').classList.add('used');
     document.getElementById('typing-hint-count').textContent = typingState.hintCount;
 
@@ -423,7 +423,7 @@ function renderTypingCard() {
 
   document.getElementById('typing-feedback').classList.add('hidden');
   document.getElementById('typing-answer-reveal').classList.add('hidden');
-  document.getElementById('typing-hint').classList.add('hidden');
+  document.getElementById('typing-hint').style.display = 'none';
   document.getElementById('btn-typing-hint').classList.remove('used');
   typingState.hintUsed = false;
   document.getElementById('typing-counter').textContent = `${typingState.index + 1} / ${filteredVocab.length}`;
