@@ -428,7 +428,7 @@ function renderTypingCard() {
   imeReset();
   input.value = '';
   input.classList.remove('correct-input', 'wrong-input');
-  input.disabled = false;
+  input.readOnly = false;
   input.focus();
 
   document.getElementById('typing-feedback').classList.add('hidden');
@@ -471,7 +471,7 @@ function checkTypingAnswer() {
   if (userAnswer === correctAnswer) {
     // Correct — lock input, show answer, Enter to advance
     typingState.answered = true;
-    input.disabled = true;
+    input.readOnly = true;
     reveal.classList.remove('hidden');
     reveal.querySelector('.typing-correct-answer').textContent = word.reading;
     reveal.querySelector('.typing-example').textContent = word.example;
