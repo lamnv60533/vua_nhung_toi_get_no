@@ -179,12 +179,110 @@ function renderFlashcard() {
   cardCounter.textContent = `${currentIndex + 1} / ${filteredVocab.length}`;
 }
 
+// ---- Romaji to Hiragana ----
+const ROMAJI_MAP = {
+  'a':'あ','i':'い','u':'う','e':'え','o':'お',
+  'ka':'か','ki':'き','ku':'く','ke':'け','ko':'こ',
+  'sa':'さ','si':'し','shi':'し','su':'す','se':'せ','so':'そ',
+  'ta':'た','ti':'ち','chi':'ち','tu':'つ','tsu':'つ','te':'て','to':'と',
+  'na':'な','ni':'に','nu':'ぬ','ne':'ね','no':'の',
+  'ha':'は','hi':'ひ','hu':'ふ','fu':'ふ','he':'へ','ho':'ほ',
+  'ma':'ま','mi':'み','mu':'む','me':'め','mo':'も',
+  'ya':'や','yu':'ゆ','yo':'よ',
+  'ra':'ら','ri':'り','ru':'る','re':'れ','ro':'ろ',
+  'wa':'わ','wi':'ゐ','we':'ゑ','wo':'を','nn':'ん',
+  'ga':'が','gi':'ぎ','gu':'ぐ','ge':'げ','go':'ご',
+  'za':'ざ','zi':'じ','ji':'じ','zu':'ず','ze':'ぜ','zo':'ぞ',
+  'da':'だ','di':'ぢ','du':'づ','de':'で','do':'ど',
+  'ba':'ば','bi':'び','bu':'ぶ','be':'べ','bo':'ぼ',
+  'pa':'ぱ','pi':'ぴ','pu':'ぷ','pe':'ぺ','po':'ぽ',
+  'kya':'きゃ','kyi':'きぃ','kyu':'きゅ','kye':'きぇ','kyo':'きょ',
+  'sha':'しゃ','shi':'し','shu':'しゅ','she':'しぇ','sho':'しょ',
+  'sya':'しゃ','syu':'しゅ','syo':'しょ',
+  'cha':'ちゃ','chi':'ち','chu':'ちゅ','che':'ちぇ','cho':'ちょ',
+  'tya':'ちゃ','tyu':'ちゅ','tyo':'ちょ',
+  'nya':'にゃ','nyi':'にぃ','nyu':'にゅ','nye':'にぇ','nyo':'にょ',
+  'hya':'ひゃ','hyi':'ひぃ','hyu':'ひゅ','hye':'ひぇ','hyo':'ひょ',
+  'mya':'みゃ','myi':'みぃ','myu':'みゅ','mye':'みぇ','myo':'みょ',
+  'rya':'りゃ','ryi':'りぃ','ryu':'りゅ','rye':'りぇ','ryo':'りょ',
+  'gya':'ぎゃ','gyi':'ぎぃ','gyu':'ぎゅ','gye':'ぎぇ','gyo':'ぎょ',
+  'ja':'じゃ','ju':'じゅ','je':'じぇ','jo':'じょ',
+  'jya':'じゃ','jyu':'じゅ','jyo':'じょ',
+  'bya':'びゃ','byi':'びぃ','byu':'びゅ','bye':'びぇ','byo':'びょ',
+  'pya':'ぴゃ','pyi':'ぴぃ','pyu':'ぴゅ','pye':'ぴぇ','pyo':'ぴょ',
+  'fa':'ふぁ','fi':'ふぃ','fe':'ふぇ','fo':'ふぉ',
+  'di':'でぃ','du':'どぅ',
+  'xa':'ぁ','xi':'ぃ','xu':'ぅ','xe':'ぇ','xo':'ぉ',
+  'xya':'ゃ','xyu':'ゅ','xyo':'ょ','xtu':'っ','xtsu':'っ',
+  'la':'ぁ','li':'ぃ','lu':'ぅ','le':'ぇ','lo':'ぉ',
+  'lya':'ゃ','lyu':'ゅ','lyo':'ょ','ltu':'っ','ltsu':'っ',
+  '-':'ー',
+};
+
+// Double consonant -> っ + consonant (e.g. "kk" -> "っk")
+const DOUBLE_CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
+
+function romajiToHiragana(text) {
+  let result = '';
+  let i = 0;
+  const input = text.toLowerCase();
+
+  while (i < input.length) {
+    // Handle 'n' before consonant or end (but not before vowel or 'y' or another 'n')
+    if (input[i] === 'n' && i + 1 < input.length && input[i + 1] !== 'a' && input[i + 1] !== 'i' && input[i + 1] !== 'u' && input[i + 1] !== 'e' && input[i + 1] !== 'o' && input[i + 1] !== 'y' && input[i + 1] !== 'n') {
+      result += 'ん';
+      i++;
+      continue;
+    }
+
+    // Handle double consonants (っ)
+    if (i + 1 < input.length && input[i] === input[i + 1] && DOUBLE_CONSONANTS.includes(input[i]) && input[i] !== 'n') {
+      result += 'っ';
+      i++;
+      continue;
+    }
+
+    // Try matching 4, 3, 2, 1 characters
+    let matched = false;
+    for (let len = 4; len >= 1; len--) {
+      const chunk = input.substring(i, i + len);
+      if (ROMAJI_MAP[chunk]) {
+        result += ROMAJI_MAP[chunk];
+        i += len;
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched) {
+      result += input[i];
+      i++;
+    }
+  }
+
+  return result;
+}
+
 // ---- Typing Practice ----
 function setupTyping() {
   const input = document.getElementById('typing-input');
   const checkBtn = document.getElementById('btn-typing-check');
 
   checkBtn.addEventListener('click', checkTypingAnswer);
+
+  // Auto-convert romaji to hiragana as user types
+  input.addEventListener('input', () => {
+    if (typingState.answered) return;
+    const pos = input.selectionStart;
+    const original = input.value;
+    const converted = romajiToHiragana(original);
+    if (converted !== original) {
+      input.value = converted;
+      // Adjust cursor position based on length change
+      const diff = original.length - converted.length;
+      input.setSelectionRange(pos - diff, pos - diff);
+    }
+  });
 
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
