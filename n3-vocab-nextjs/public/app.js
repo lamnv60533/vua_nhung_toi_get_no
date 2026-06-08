@@ -98,6 +98,7 @@ function getProjectVocabById(id) {
   if (id === MIMIKARA_PROJECT_ID) return [...MIMIKARA_VOCAB];
   if (id === VERB_PROJECT_ID) return [...VERB_VOCAB];
   if (id === N4_PROJECT_ID) return [...N4_VOCAB];
+  if (id === KANJI_JLPT_PROJECT_ID) return [...KANJI_JLPT_VOCAB];
   const project = customProjects.find(p => p.id === id);
   return project ? [...project.words] : [];
 }

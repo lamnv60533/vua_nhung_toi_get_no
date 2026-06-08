@@ -400,6 +400,7 @@ export default function Home() {
       <Script src="/mimikara-data.js" strategy="beforeInteractive" />
       <Script src="/verb-data.js" strategy="beforeInteractive" />
       <Script src="/n4-data.js" strategy="beforeInteractive" />
+      <Script src="/kanji-jlpt-data.js" strategy="beforeInteractive" />
       <Script src="/app.js" strategy="afterInteractive" />
     </>
   );
