@@ -3,12 +3,14 @@ const N3_PROJECT_ID = 'n3';
 const MIMIKARA_PROJECT_ID = 'mimikara';
 const VERB_PROJECT_ID = 'verb';
 const N4_PROJECT_ID = 'n4';
+const KANJI_JLPT_PROJECT_ID = 'kanji-jlpt';
 
 const BUILTIN_PROJECTS = [
   { id: N3_PROJECT_ID, name: 'N3', isBuiltin: true },
   { id: MIMIKARA_PROJECT_ID, name: 'Mimikara', isBuiltin: true },
   { id: VERB_PROJECT_ID, name: 'Động từ', isBuiltin: true },
   { id: N4_PROJECT_ID, name: 'N4 (Bài 26-50)', isBuiltin: true, lessonBased: true },
+  { id: KANJI_JLPT_PROJECT_ID, name: 'Kanji JLPT N4', isBuiltin: true },
 ];
 
 function isLessonBasedProject(id) {
